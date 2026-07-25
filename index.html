@@ -173,23 +173,25 @@ Explore the Crisis Map
 
 <h2>Global Refugee Statistics</h2>
 
+<p class="section-description">
+These trusted numbers come from the UN Refugee Agency. We check for new data every hour.
+</p>
+
 <div class="stats-grid">
 
 <div class="stat-card">
 
 <h1>
 
-<span class="count" data-target="177">0</span>M
+<span class="count" id="displaced-count" data-target="0">—</span>
 
 </h1>
 
-<h2>REFUGEES STILL NOT HOME!</h2>
+<h2>PEOPLE FORCED TO FLEE</h2>
 
 <p>
 
-Millions of people around the world remain displaced
-because of war, conflict, persecution and natural
-disasters.
+People may have to leave home because of conflict or persecution. Every number represents a person with a story.
 
 </p>
 
@@ -199,22 +201,27 @@ disasters.
 
 <h1>
 
-<span class="count" data-target="39">0</span>%
+<span class="count" id="children-count" data-target="0">—</span><span id="children-suffix">%</span>
 
 </h1>
 
-<h2>ARE JUST KIDS UNDER 18!</h2>
+<h2>ARE CHILDREN UNDER 18</h2>
 
 <p>
 
-Almost four out of every ten refugees are children,
-facing disrupted education and uncertain futures.
+Among refugees and other people in need of protection whose ages are reported. Children need safety, learning and friendship.
 
 </p>
 
 </div>
 
 </div>
+
+<p class="data-note" id="statistics-status" role="status">Loading the latest UNHCR statistics…</p>
+
+<p class="data-note">
+<a href="https://www.unhcr.org/refugee-statistics/" target="_blank" rel="noopener noreferrer">See the source and learn what the numbers mean →</a>
+</p>
 
 </div>
 
@@ -473,52 +480,18 @@ to educate and inspire others.
 
 <p class="section-description">
 
-Stay informed with the latest refugee-related news from around the
-world. This article updates automatically every 24 hours.
+Explore recent refugee stories from around the world. We check for new stories every day.
 
 </p>
 
-<div class="resource-card" id="news-card">
-
-<img
-id="news-image"
-src=""
-alt="Latest Refugee News"
-style="width:100%;display:none;border-radius:12px;margin-bottom:20px;">
-
-<h3 id="news-title">
-
-Loading latest news...
-
-</h3>
-
-<p id="news-summary"></p>
-
-<p>
-
-<strong>Source:</strong>
-<span id="news-source"></span>
-
-</p>
-
-<p>
-
-<strong>Published:</strong>
-<span id="news-date"></span>
-
-</p>
-
-<a
-id="news-link"
-href="#"
-target="_blank"
-class="card-button">
-
-Read Full Article →
-
-</a>
-
+<div class="news-grid" id="news-list" aria-live="polite">
+<div class="resource-card news-placeholder">
+<h3>Finding today’s stories…</h3>
+<p>Our news helper is checking trusted sources.</p>
 </div>
+</div>
+
+<p class="data-note" id="news-status" role="status"></p>
 
 </div>
 

@@ -1,21 +1,21 @@
-name: Update Refugee News
+name: Update Refugee Statistics
 
 on:
   schedule:
-    # Avoid the busiest minute of the hour for more reliable scheduling.
-    - cron: "17 1 * * *"
+    # Check hourly; UNHCR source values change on their own reporting cadence.
+    - cron: "23 * * * *"
   workflow_dispatch:
   push:
     branches: [main]
     paths:
-      - fetchNews.js
-      - .github/workflows/update-news.yml
+      - fetchStatistics.js
+      - .github/workflows/update-statistics.yml
 
 permissions:
   contents: write
 
 concurrency:
-  group: update-refugee-news
+  group: update-refugee-statistics
   cancel-in-progress: false
 
 jobs:
@@ -30,17 +30,15 @@ jobs:
         with:
           node-version: 20
 
-      - name: Fetch verified news data
-        run: node fetchNews.js
-        env:
-          NEWS_API_KEY: ${{ secrets.NEWS_API_KEY }}
+      - name: Fetch UNHCR statistics
+        run: node fetchStatistics.js
 
-      - name: Commit changed news
+      - name: Commit changed statistics
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add news.json
+          git add statistics.json
           git diff --cached --quiet && exit 0
-          git commit -m "Update refugee news"
+          git commit -m "Update refugee statistics"
           git pull --rebase origin main
           git push
