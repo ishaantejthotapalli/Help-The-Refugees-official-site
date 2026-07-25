@@ -1,0 +1,210 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Safe Passage | Help The Refugees</title>
+
+    <meta name="description" content="Play Safe Passage and experience the journey of refugees seeking safety.">
+
+    <link rel="stylesheet" href="../style.css">
+
+    <link rel="icon" href="../images/logo.png">
+
+</head>
+
+<body>
+
+<!-- Scroll Progress Bar -->
+
+<div id="progress-bar"></div>
+
+<!-- ================= NAVIGATION ================= -->
+
+<header>
+
+<nav class="navbar">
+
+<div class="nav-left">
+
+<a href="../index.html" class="logo">
+
+<img src="../images/logo.png" alt="Help The Refugees Logo">
+
+<span>Help The Refugees</span>
+
+</a>
+
+</div>
+
+<ul class="nav-links">
+
+<li><a href="../index.html">Home</a></li>
+
+<li class="dropdown">
+
+<a href="#" class="active">Games ▾</a>
+
+<ul class="dropdown-content">
+
+<li><a href="refugee-journey.html">Refugee Journey</a></li>
+
+<li><a href="safe-passage.html" class="active">Safe Passage</a></li>
+
+</ul>
+
+</li>
+
+<li class="dropdown">
+
+<a href="#">More Info ▾</a>
+
+<ul class="dropdown-content">
+
+<li><a href="../more-info/world-crisis-map.html">World Crisis Map</a></li>
+
+<li><a href="../more-info/hardships.html">Hardships of Refugees</a></li>
+
+<li><a href="../more-info/videos.html">Videos</a></li>
+
+</ul>
+
+</li>
+
+<li><a href="../feedback.html">Feedback</a></li>
+
+<li><a href="../events.html">Events</a></li>
+
+</ul>
+
+<div class="menu-toggle">☰</div>
+
+</nav>
+
+</header>
+
+<!-- ================= HERO ================= -->
+
+<section class="hero" style="height:45vh;">
+
+<div class="hero-overlay">
+
+<div class="hero-content">
+
+<h1>Safe Passage</h1>
+
+<p>
+Guide refugee families through difficult situations and help them reach safety.
+</p>
+
+</div>
+
+</div>
+
+<img src="../images/banner.png"
+     class="hero-image"
+     alt="Safe Passage">
+
+</section>
+
+<!-- ================= GAME ================= -->
+
+<section class="reveal">
+
+<div class="container">
+
+<h2>Play Safe Passage</h2>
+
+<p class="section-description">
+
+Can you help a refugee family make the right choices and reach safety?
+
+</p>
+
+<div id="game-container">
+
+<!DOCTYPE html><html><head><meta charset="utf-8">
+<title>Safe Passage</title>
+<style>
+body{margin:0;background:#1d1d1d;font-family:Arial;color:#fff;overflow:hidden}
+#menu,#end{position:absolute;inset:0;background:#111;display:flex;align-items:center;justify-content:center}
+.panel{background:#2d2d2d;padding:20px;border:3px solid #777;max-width:520px;text-align:center}
+button{padding:10px 18px;font-size:18px;cursor:pointer}
+canvas{display:block;margin:auto;background:#7cc56f;image-rendering:pixelated}
+#hud{position:absolute;left:10px;top:10px;background:#0008;padding:8px;display:none}
+</style></head><body>
+<div id=menu><div class=panel><h1>🛡️ Safe Passage</h1>
+<p>Guide the refugee (blue) to the shelter (gold). Keep hostile mobs (red) away by intercepting them.</p>
+<p>Move: WASD / Arrow Keys</p><button id=play>Play</button></div></div>
+<div id=hud>Health: <span id=hp>100</span></div>
+<div id=end style="display:none"><div class=panel><h2 id=result></h2><button onclick="location.reload()">Play Again</button></div></div>
+<canvas id=c width=800 height=512></canvas>
+<script>
+const cv=c,ctx=cv.getContext('2d');
+let running=false;
+const player={x:100,y:256,r:12,s:3};
+const refugee={x:140,y:256,r:10,h:100};
+const shelter={x:740,y:256,w:28,h:60};
+const mobs=[];
+for(let i=0;i<8;i++)mobs.push({x:350+Math.random()*380,y:40+Math.random()*430,r:11,s:1.2});
+const k={};
+onkeydown=e=>k[e.key]=1;onkeyup=e=>k[e.key]=0;
+play.onclick=()=>{menu.style.display='none';hud.style.display='block';running=true;}
+function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y)}
+function endGame(t){running=false;end.style.display='flex';result.textContent=t;}
+function upd(){
+ if(!running)return;
+ let dx=(k.d||k.ArrowRight?1:0)-(k.a||k.ArrowLeft?1:0);
+ let dy=(k.s||k.ArrowDown?1:0)-(k.w||k.ArrowUp?1:0);
+ let l=Math.hypot(dx,dy)||1;
+ player.x+=dx/l*player.s; player.y+=dy/l*player.s;
+ player.x=Math.max(12,Math.min(788,player.x));
+ player.y=Math.max(12,Math.min(500,player.y));
+ // refugee follows
+ let rx=player.x-refugee.x, ry=player.y-refugee.y;
+ let rl=Math.hypot(rx,ry);
+ if(rl>24){refugee.x+=rx/rl*2; refugee.y+=ry/rl*2;}
+ mobs.forEach(m=>{
+   let tx=refugee.x-m.x, ty=refugee.y-m.y;
+   let tl=Math.hypot(tx,ty)||1;
+   // push away if player close
+   if(dist(player,m)<28){
+      m.x-=tx/tl*2.5; m.y-=ty/tl*2.5;
+   } else {
+      m.x+=tx/tl*m.s; m.y+=ty/tl*m.s;
+   }
+   if(dist(m,refugee)<18){refugee.h-=0.25;}
+ });
+ hp.textContent=Math.max(0,Math.round(refugee.h));
+ if(refugee.h<=0) endGame("The refugee was overwhelmed. Try again.");
+ if(refugee.x>shelter.x && Math.abs(refugee.y-shelter.y)<40) endGame("Success! You escorted the refugee safely to the shelter.");
+}
+function drawCircle(o,col){ctx.fillStyle=col;ctx.beginPath();ctx.arc(o.x,o.y,o.r,0,6.28);ctx.fill();}
+function loop(){
+ upd();
+ ctx.clearRect(0,0,800,512);
+ ctx.fillStyle="#d4b04c";ctx.fillRect(shelter.x,shelter.y-30,shelter.w,shelter.h);
+ ctx.fillStyle="#444";ctx.fillRect(0,0,800,20);ctx.fillRect(0,492,800,20);
+ drawCircle(refugee,"#3fa9ff");
+ drawCircle(player,"#ffffff");
+ mobs.forEach(m=>drawCircle(m,"#d33"));
+ requestAnimationFrame(loop);
+}
+loop();
+</script></body></html>
+
+</div>
+
+</div>
+
+</section>
+
+<script src="../script.js"></script>
+
+</body>
+
+</html>
