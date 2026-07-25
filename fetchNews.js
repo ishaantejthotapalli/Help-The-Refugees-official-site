@@ -1,6 +1,6 @@
 const fs = require("fs");
 
-const NEWS_API_KEY = "YOUR_NEWSAPI_KEY";
+const NEWS_API_KEY = "process.env.NEWS_API_KEY";
 
 const url =
 `https://newsapi.org/v2/everything?q=refugees&language=en&pageSize=1&sortBy=publishedAt&apiKey=${NEWS_API_KEY}`;
