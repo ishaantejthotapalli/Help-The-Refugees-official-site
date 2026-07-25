@@ -203,3 +203,39 @@ console.log(
 "%cCreated by Ishaan & Bramhha",
 "color:#1b5e20;font-size:14px;"
 );
+// ================= Latest Refugee News =================
+
+fetch("news.json")
+.then(response => response.json())
+.then(data => {
+
+const article = data.article;
+
+document.getElementById("news-title").textContent = article.title;
+
+document.getElementById("news-summary").textContent = article.summary;
+
+document.getElementById("news-source").textContent = article.source;
+
+document.getElementById("news-date").textContent = article.published;
+
+document.getElementById("news-link").href = article.url;
+
+if(article.image){
+
+const img = document.getElementById("news-image");
+
+img.src = article.image;
+
+img.style.display = "block";
+
+}
+
+})
+.catch(error => {
+
+document.getElementById("news-title").textContent = "Unable to load the latest news.";
+
+console.error(error);
+
+});
