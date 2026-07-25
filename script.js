@@ -203,79 +203,121 @@ console.log(
 "%cCreated by Ishaan & Bramhha",
 "color:#1b5e20;font-size:14px;"
 );
-// ================= Latest Refugee News =================
+/* ================= Live Educational Data ================= */
 
-fetch("news.json")
-.then(response => response.json())
-.then(data => {
-
-const article = data.article;
-
-document.getElementById("news-title").textContent = article.title;
-
-document.getElementById("news-summary").textContent = article.summary;
-
-document.getElementById("news-source").textContent = article.source;
-
-document.getElementById("news-date").textContent = article.published;
-
-document.getElementById("news-link").href = article.url;
-
-if(article.image){
-
-const img = document.getElementById("news-image");
-
-img.src = article.image;
-
-img.style.display = "block";
-
+function formatDate(value) {
+    if (!value) return "date not supplied";
+    const date = new Date(value);
+    return Number.isNaN(date.getTime())
+        ? "date not supplied"
+        : new Intl.DateTimeFormat(undefined, { dateStyle: "medium" }).format(date);
 }
 
-})
-.catch(error => {
+function animateNumber(element, target, formatter = value => value.toLocaleString()) {
+    if (!element || !Number.isFinite(target)) return;
+    const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const duration = reducedMotion ? 0 : 900;
+    const started = performance.now();
 
-document.getElementById("news-title").textContent = "Unable to load the latest news.";
+    function frame(now) {
+        const progress = duration === 0 ? 1 : Math.min((now - started) / duration, 1);
+        const eased = 1 - Math.pow(1 - progress, 3);
+        element.textContent = formatter(Math.round(target * eased));
+        if (progress < 1) requestAnimationFrame(frame);
+    }
 
-console.error(error);
+    requestAnimationFrame(frame);
+}
 
-});
-/* ================= COUNT-UP ANIMATION ================= */
+async function loadNews() {
+    const list = document.getElementById("news-list");
+    const status = document.getElementById("news-status");
+    if (!list) return;
 
-const counters = document.querySelectorAll(".count");
+    try {
+        const response = await fetch(`news.json?v=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`News request failed with ${response.status}`);
+        const data = await response.json();
+        const articles = Array.isArray(data.articles) ? data.articles : [];
+        if (!articles.length) throw new Error("No stories are available yet");
 
-const observer = new IntersectionObserver((entries) => {
+        list.replaceChildren(...articles.slice(0, 5).map(article => {
+            const card = document.createElement("article");
+            card.className = "resource-card news-card";
 
-    entries.forEach(entry => {
-
-        console.log("Intersecting:", entry.isIntersecting);
-
-        if (!entry.isIntersecting) return;
-
-        const counter = entry.target;
-        const target = parseInt(counter.dataset.target, 10);
-
-        let current = 0;
-
-        const timer = setInterval(() => {
-
-            current++;
-
-            counter.textContent = current;
-
-            if (current >= target) {
-
-                clearInterval(timer);
-
+            if (article.image) {
+                const image = document.createElement("img");
+                image.src = article.image;
+                image.alt = "";
+                image.loading = "lazy";
+                image.referrerPolicy = "no-referrer";
+                card.appendChild(image);
             }
 
-        }, 10);
+            const heading = document.createElement("h3");
+            heading.textContent = article.title;
+            card.appendChild(heading);
 
-        observer.unobserve(counter);
+            const summary = document.createElement("p");
+            summary.textContent = article.summary || "Open this story to learn more.";
+            card.appendChild(summary);
 
-    });
+            const meta = document.createElement("p");
+            meta.className = "news-meta";
+            meta.textContent = `${article.source || "News source"} · ${formatDate(article.published)}`;
+            card.appendChild(meta);
 
-}, {
-    threshold: 0.4
-});
+            const link = document.createElement("a");
+            link.className = "card-button";
+            link.href = article.url;
+            link.target = "_blank";
+            link.rel = "noopener noreferrer";
+            link.textContent = "Read and learn →";
+            card.appendChild(link);
+            return card;
+        }));
 
-counters.forEach(counter => observer.observe(counter));
+        if (status) status.textContent = `Stories last checked ${formatDate(data.lastUpdated)}.`;
+    } catch (error) {
+        list.innerHTML = '<div class="resource-card news-placeholder"><h3>Our news helper is taking a break</h3><p>Please check back soon. The last good stories will return automatically.</p></div>';
+        if (status) status.textContent = "News is temporarily unavailable.";
+        console.error(error);
+    }
+}
+
+async function loadStatistics() {
+    const total = document.getElementById("displaced-count");
+    const children = document.getElementById("children-count");
+    const status = document.getElementById("statistics-status");
+    if (!total || !children) return;
+
+    try {
+        const response = await fetch(`statistics.json?v=${Date.now()}`, { cache: "no-store" });
+        if (!response.ok) throw new Error(`Statistics request failed with ${response.status}`);
+        const data = await response.json();
+        if (!Number.isFinite(data.totalForciblyDisplaced)) throw new Error("Statistics have not loaded yet");
+
+        animateNumber(total, data.totalForciblyDisplaced, value =>
+            new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(value));
+
+        if (Number.isFinite(data.childrenPercentage)) {
+            animateNumber(children, data.childrenPercentage);
+        } else {
+            children.textContent = "—";
+            const suffix = document.getElementById("children-suffix");
+            if (suffix) suffix.textContent = "";
+        }
+
+        if (status) {
+            status.textContent = `UNHCR reporting year ${data.reportingYear}. Data checked ${formatDate(data.checkedAt)}.`;
+        }
+    } catch (error) {
+        total.textContent = "—";
+        children.textContent = "—";
+        if (status) status.textContent = "The latest UNHCR numbers are being prepared. Please check back soon.";
+        console.error(error);
+    }
+}
+
+loadNews();
+loadStatistics();

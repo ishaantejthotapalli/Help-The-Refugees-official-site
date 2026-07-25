@@ -1,11 +1,4 @@
 {
-  "lastUpdated": "Never",
-  "article": {
-    "title": "No news available yet",
-    "summary": "The latest refugee news will appear here once the automatic updater runs.",
-    "image": "",
-    "url": "",
-    "source": "Help The Refugees",
-    "published": ""
-  }
+  "lastUpdated": null,
+  "articles": []
 }

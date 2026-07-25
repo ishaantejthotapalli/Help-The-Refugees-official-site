@@ -762,3 +762,137 @@ footer hr{
     background:#27ae60;
     color:white;
 }
+
+/* =========================================
+   KID-FRIENDLY LEARNING UI
+========================================= */
+
+:root{
+    --leaf:#218c54;
+    --leaf-dark:#145b38;
+    --sun:#ffd166;
+    --sky:#dff4ff;
+    --berry:#ef5da8;
+    --ink:#24333f;
+}
+
+body{
+    color:var(--ink);
+    background:
+        radial-gradient(circle at 8% 4%,rgba(255,209,102,.28),transparent 19rem),
+        radial-gradient(circle at 92% 18%,rgba(111,204,255,.22),transparent 22rem),
+        #f7fcf8;
+}
+
+section h2{
+    letter-spacing:-.02em;
+}
+
+.statistics{
+    background:linear-gradient(180deg,var(--sky),#f7fcf8);
+}
+
+.stat-card{
+    border:3px solid rgba(33,140,84,.16);
+    position:relative;
+    overflow:hidden;
+}
+
+.stat-card::before{
+    content:"★";
+    position:absolute;
+    right:18px;
+    top:8px;
+    color:var(--sun);
+    font-size:2rem;
+    transform:rotate(12deg);
+}
+
+.stat-card h1{
+    color:#d63e57;
+}
+
+.data-note{
+    text-align:center;
+    color:#53646f;
+    margin:18px auto 0;
+    max-width:780px;
+}
+
+.data-note a{
+    color:var(--leaf-dark);
+    font-weight:700;
+}
+
+.news-grid,
+.cards{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(260px,1fr));
+    gap:24px;
+}
+
+.news-card{
+    display:flex;
+    flex-direction:column;
+    border:3px solid rgba(111,204,255,.3);
+}
+
+.news-card img{
+    width:calc(100% + 60px);
+    height:190px;
+    object-fit:cover;
+    margin:-30px -30px 24px;
+    border-radius:17px 17px 0 0;
+}
+
+.news-card .card-button{
+    align-self:flex-start;
+    margin-top:auto;
+}
+
+.news-meta{
+    margin-top:16px;
+    color:#657783 !important;
+    font-size:.92rem;
+    font-weight:700;
+}
+
+.news-placeholder{
+    text-align:center;
+    border:3px dashed rgba(33,140,84,.35);
+}
+
+.card,
+.btn{
+    border-radius:20px;
+}
+
+.card{
+    background:white;
+    padding:30px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+}
+
+.btn{
+    display:inline-block;
+    padding:14px 28px;
+    background:var(--leaf);
+    color:white;
+    text-decoration:none;
+    font-weight:700;
+}
+
+a:focus-visible,
+button:focus-visible{
+    outline:4px solid var(--sun);
+    outline-offset:4px;
+}
+
+@media (prefers-reduced-motion:reduce){
+    *,*::before,*::after{
+        scroll-behavior:auto !important;
+        animation-duration:.01ms !important;
+        animation-iteration-count:1 !important;
+        transition-duration:.01ms !important;
+    }
+}
