@@ -1,0 +1,801 @@
+/* =========================================
+   HELP THE REFUGEES
+   Main Stylesheet
+========================================= */
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+}
+
+html{
+    scroll-behavior:smooth;
+}
+
+body{
+    font-family:Arial, Helvetica, sans-serif;
+    background:#f4f9f4;
+    color:#333;
+    line-height:1.6;
+    overflow-x:hidden;
+}
+
+/* Scroll Progress Bar */
+
+#progress-bar{
+    position:fixed;
+    top:0;
+    left:0;
+    width:0%;
+    height:5px;
+    background:#27ae60;
+    z-index:9999;
+    transition:width .15s linear;
+}
+
+/* Container */
+
+.container{
+    width:90%;
+    max-width:1200px;
+    margin:auto;
+}
+
+/* ================= NAVIGATION ================= */
+
+header{
+    position:sticky;
+    top:0;
+    z-index:1000;
+}
+
+.navbar{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:15px 6%;
+    background:rgba(255,255,255,.97);
+    backdrop-filter:blur(8px);
+    box-shadow:0 4px 15px rgba(0,0,0,.08);
+}
+
+.logo{
+    display:flex;
+    align-items:center;
+    text-decoration:none;
+    color:#1b5e20;
+    font-size:1.4rem;
+    font-weight:bold;
+}
+
+.logo img{
+    width:55px;
+    margin-right:12px;
+}
+
+.nav-links{
+    display:flex;
+    list-style:none;
+    gap:25px;
+}
+
+.nav-links li{
+    position:relative;
+}
+
+.nav-links a{
+    text-decoration:none;
+    color:#2e7d32;
+    font-weight:600;
+    transition:.3s;
+    padding:8px 5px;
+}
+
+.nav-links a:hover,
+.nav-links .active{
+    color:#27ae60;
+}
+
+.nav-links a::after{
+    content:"";
+    display:block;
+    width:0%;
+    height:2px;
+    background:#27ae60;
+    transition:.35s;
+}
+
+.nav-links a:hover::after,
+.nav-links .active::after{
+    width:100%;
+}
+
+/* Dropdown */
+
+.dropdown-content{
+    position:absolute;
+    top:45px;
+    left:0;
+    background:white;
+    min-width:230px;
+    list-style:none;
+    border-radius:12px;
+    overflow:hidden;
+    box-shadow:0 12px 25px rgba(0,0,0,.15);
+
+    opacity:0;
+    visibility:hidden;
+    transform:translateY(15px);
+    transition:.35s;
+}
+
+.dropdown:hover .dropdown-content{
+    opacity:1;
+    visibility:visible;
+    transform:translateY(0);
+}
+
+.dropdown-content li a{
+    display:block;
+    padding:14px 18px;
+}
+
+.dropdown-content li a:hover{
+    background:#edf9ef;
+}
+
+/* Mobile */
+
+.menu-toggle{
+    display:none;
+    font-size:2rem;
+    cursor:pointer;
+    color:#2e7d32;
+}
+
+/* ================= HERO ================= */
+
+.hero{
+    position:relative;
+    height:85vh;
+    overflow:hidden;
+}
+
+.hero-image{
+    width:100%;
+    height:100%;
+    object-fit:cover;
+    animation:zoomHero 16s infinite alternate;
+}
+
+.hero-overlay{
+    position:absolute;
+    inset:0;
+    background:rgba(0,0,0,.45);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    z-index:2;
+}
+
+.hero-content{
+    color:white;
+    width:90%;
+    max-width:850px;
+    animation:fadeUp 1.2s ease;
+}
+
+.hero-content h1{
+    font-size:4rem;
+    margin-bottom:20px;
+}
+
+.hero-content p{
+    font-size:1.3rem;
+    margin-bottom:35px;
+}
+
+.hero-buttons{
+    display:flex;
+    justify-content:center;
+    gap:20px;
+    flex-wrap:wrap;
+}
+
+.primary-btn,
+.secondary-btn,
+.card-button{
+    text-decoration:none;
+    padding:14px 28px;
+    border-radius:50px;
+    font-weight:bold;
+    transition:.3s;
+}
+
+.primary-btn{
+    background:#27ae60;
+    color:white;
+}
+
+.primary-btn:hover{
+    background:#1e874b;
+    transform:translateY(-4px);
+}
+
+.secondary-btn{
+    background:white;
+    color:#27ae60;
+}
+
+.secondary-btn:hover{
+    transform:translateY(-4px);
+}
+
+/* ================= ANIMATIONS ================= */
+
+@keyframes zoomHero{
+
+    from{
+        transform:scale(1);
+    }
+
+    to{
+        transform:scale(1.08);
+    }
+
+}
+
+@keyframes fadeUp{
+
+    from{
+        opacity:0;
+        transform:translateY(50px);
+    }
+
+    to{
+        opacity:1;
+        transform:translateY(0);
+    }
+
+}
+
+.reveal{
+    opacity:0;
+    transform:translateY(50px);
+    transition:1s;
+}
+
+.reveal.active{
+    opacity:1;
+    transform:translateY(0);
+}
+/* =========================================
+   CONTENT SECTIONS
+========================================= */
+
+section{
+    padding:80px 0;
+}
+
+section h2{
+    text-align:center;
+    font-size:2.5rem;
+    color:#1b5e20;
+    margin-bottom:20px;
+}
+
+.section-description{
+    text-align:center;
+    max-width:800px;
+    margin:0 auto 50px;
+    font-size:1.1rem;
+    color:#555;
+}
+
+/* Welcome */
+
+.welcome p,
+.mission p,
+.cta p{
+    max-width:900px;
+    margin:20px auto;
+    text-align:center;
+    font-size:1.1rem;
+    line-height:1.8;
+}
+
+/* Card Grid */
+
+.card-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(280px,1fr));
+    gap:30px;
+    margin-top:40px;
+}
+
+/* Shared Cards */
+
+.info-card,
+.game-card,
+.resource-card,
+.team-card{
+    background:white;
+    border-radius:20px;
+    padding:30px;
+    box-shadow:0 10px 25px rgba(0,0,0,.08);
+    transition:.35s;
+}
+
+.info-card:hover,
+.game-card:hover,
+.resource-card:hover,
+.team-card:hover{
+    transform:translateY(-10px);
+    box-shadow:0 20px 40px rgba(0,0,0,.15);
+}
+
+.info-card h3,
+.game-card h3,
+.resource-card h3,
+.team-card h3{
+    color:#2e7d32;
+    margin-bottom:15px;
+    font-size:1.4rem;
+}
+
+.info-card p,
+.game-card p,
+.resource-card p,
+.team-card p{
+    color:#555;
+    line-height:1.7;
+}
+
+/* Card Buttons */
+
+.card-button{
+    display:inline-block;
+    margin-top:25px;
+    background:#27ae60;
+    color:white;
+}
+
+.card-button:hover{
+    background:#1f8b4f;
+    transform:translateY(-3px);
+}
+
+/* =========================================
+   TEAM
+========================================= */
+
+.team-grid{
+    display:grid;
+    grid-template-columns:repeat(auto-fit,minmax(320px,1fr));
+    gap:35px;
+    margin-top:50px;
+}
+
+.team-card{
+    text-align:center;
+}
+
+.team-card img{
+    width:180px;
+    height:180px;
+    border-radius:50%;
+    object-fit:cover;
+    border:6px solid #27ae60;
+    margin-bottom:20px;
+    transition:.4s;
+}
+
+.team-card:hover img{
+    transform:scale(1.05) rotate(3deg);
+}
+
+/* =========================================
+   CTA
+========================================= */
+
+.cta{
+    background:linear-gradient(135deg,#2ecc71,#27ae60);
+    color:white;
+    text-align:center;
+}
+
+.cta h2{
+    color:white;
+}
+
+.cta .primary-btn{
+    margin-top:30px;
+    display:inline-block;
+    background:white;
+    color:#27ae60;
+}
+
+.cta .primary-btn:hover{
+    background:#ecfff2;
+}
+
+/* =========================================
+   FOOTER
+========================================= */
+
+footer{
+    background:#1b5e20;
+    color:white;
+    text-align:center;
+    padding:60px 20px;
+}
+
+.footer-logo{
+    width:90px;
+    margin-bottom:20px;
+}
+
+footer h3{
+    font-size:2rem;
+    margin-bottom:15px;
+}
+
+footer p{
+    max-width:700px;
+    margin:15px auto;
+    line-height:1.8;
+}
+
+.footer-links{
+    margin:35px 0;
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:18px;
+}
+
+.footer-links a{
+    color:white;
+    text-decoration:none;
+    transition:.3s;
+}
+
+.footer-links a:hover{
+    color:#8cffb3;
+}
+
+footer hr{
+    border:none;
+    height:1px;
+    background:rgba(255,255,255,.2);
+    margin:40px auto;
+    max-width:900px;
+}
+
+/* =========================================
+   EXTRA HOVER EFFECTS
+========================================= */
+
+.primary-btn,
+.secondary-btn,
+.card-button,
+.team-card,
+.info-card,
+.game-card,
+.resource-card{
+    will-change:transform;
+}
+
+.primary-btn:active,
+.secondary-btn:active,
+.card-button:active{
+    transform:scale(.97);
+}
+/* =========================================
+   RESPONSIVE DESIGN
+========================================= */
+
+@media (max-width: 992px){
+
+    .hero-content h1{
+        font-size:3rem;
+    }
+
+    .hero-content p{
+        font-size:1.1rem;
+    }
+
+    section h2{
+        font-size:2.2rem;
+    }
+
+}
+
+/* ================= MOBILE ================= */
+
+@media (max-width:768px){
+
+    .navbar{
+        padding:15px 20px;
+        flex-wrap:wrap;
+    }
+
+    .menu-toggle{
+        display:block;
+    }
+
+    .nav-links{
+
+        display:none;
+
+        flex-direction:column;
+
+        width:100%;
+
+        margin-top:20px;
+
+        background:white;
+
+        border-radius:15px;
+
+        overflow:hidden;
+
+        box-shadow:0 10px 25px rgba(0,0,0,.15);
+
+        animation:slideDown .4s ease;
+
+    }
+
+    .nav-links.show{
+        display:flex;
+    }
+
+    .nav-links li{
+        width:100%;
+    }
+
+    .nav-links li a{
+        display:block;
+        padding:18px;
+    }
+
+    .dropdown-content{
+
+        position:static;
+
+        opacity:1;
+
+        visibility:visible;
+
+        transform:none;
+
+        display:none;
+
+        box-shadow:none;
+
+        background:#f7fff8;
+
+        border-radius:0;
+
+    }
+
+    .dropdown.open .dropdown-content{
+        display:block;
+    }
+
+    .hero{
+
+        height:70vh;
+
+    }
+
+    .hero-content h1{
+
+        font-size:2.4rem;
+
+    }
+
+    .hero-content p{
+
+        font-size:1rem;
+
+    }
+
+    .hero-buttons{
+
+        flex-direction:column;
+
+        align-items:center;
+
+    }
+
+    .primary-btn,
+    .secondary-btn{
+
+        width:250px;
+
+        text-align:center;
+
+    }
+
+    section{
+
+        padding:60px 0;
+
+    }
+
+    section h2{
+
+        font-size:2rem;
+
+    }
+
+    .card-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .team-grid{
+
+        grid-template-columns:1fr;
+
+    }
+
+    .team-card img{
+
+        width:150px;
+
+        height:150px;
+
+    }
+
+    .footer-links{
+
+        flex-direction:column;
+
+        gap:12px;
+
+    }
+
+}
+
+/* ================= SMALL PHONES ================= */
+
+@media (max-width:480px){
+
+    .logo span{
+
+        display:none;
+
+    }
+
+    .logo img{
+
+        width:45px;
+
+        margin-right:0;
+
+    }
+
+    .hero{
+
+        height:60vh;
+
+    }
+
+    .hero-content h1{
+
+        font-size:2rem;
+
+    }
+
+    .hero-content p{
+
+        font-size:.95rem;
+
+    }
+
+    .primary-btn,
+    .secondary-btn,
+    .card-button{
+
+        padding:12px 22px;
+
+        font-size:.95rem;
+
+    }
+
+    section h2{
+
+        font-size:1.8rem;
+
+    }
+
+}
+
+/* =========================================
+   EXTRA ANIMATIONS
+========================================= */
+
+@keyframes slideDown{
+
+    from{
+
+        opacity:0;
+
+        transform:translateY(-15px);
+
+    }
+
+    to{
+
+        opacity:1;
+
+        transform:translateY(0);
+
+    }
+
+}
+
+@keyframes float{
+
+    0%{
+        transform:translateY(0);
+    }
+
+    50%{
+        transform:translateY(-8px);
+    }
+
+    100%{
+        transform:translateY(0);
+    }
+
+}
+
+.hero-buttons .primary-btn{
+
+    animation:float 3s ease-in-out infinite;
+
+}
+
+/* =========================================
+   CUSTOM SCROLLBAR
+========================================= */
+
+::-webkit-scrollbar{
+
+    width:10px;
+
+}
+
+::-webkit-scrollbar-track{
+
+    background:#e8f5e9;
+
+}
+
+::-webkit-scrollbar-thumb{
+
+    background:#27ae60;
+
+    border-radius:10px;
+
+}
+
+::-webkit-scrollbar-thumb:hover{
+
+    background:#1e874b;
+
+}
+
+::selection{
+
+    background:#27ae60;
+
+    color:white;
+
+}
