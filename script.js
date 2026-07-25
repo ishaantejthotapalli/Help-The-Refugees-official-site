@@ -243,8 +243,6 @@ console.error(error);
 
 const counters = document.querySelectorAll(".count");
 
-console.log("Counters found:", counters.length);
-
 const observer = new IntersectionObserver((entries) => {
 
     entries.forEach(entry => {
