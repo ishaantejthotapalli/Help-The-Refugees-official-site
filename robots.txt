@@ -1,0 +1,5 @@
+User-agent: *
+
+Allow: /
+
+Sitemap: https://ishaantejthotapalli.github.io/Help-The-Refugees-official-site/sitemap.xml
