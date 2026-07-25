@@ -4,126 +4,95 @@
 <head>
 
 <meta charset="UTF-8">
-
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-<title>404 - Page Not Found | Help The Refugees</title>
+<title>404 | Help The Refugees</title>
 
-<meta name="description" content="The page you are looking for could not be found.">
+<link rel="stylesheet" href="/Help-The-Refugees-official-site/style.css">
+<link rel="icon" href="/Help-The-Refugees-official-site/images/logo.png">
 
-<link rel="stylesheet" href="style.css">
+<style>
+.error-page{
+    min-height:100vh;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    text-align:center;
+    padding:40px;
+}
 
-<link rel="icon" href="images/logo.png">
+.error-box{
+    max-width:700px;
+}
+
+.error-box h1{
+    font-size:96px;
+    margin-bottom:10px;
+}
+
+.error-box h2{
+    margin-bottom:20px;
+}
+
+.error-box p{
+    margin-bottom:30px;
+    line-height:1.6;
+}
+
+.home-btn{
+    display:inline-block;
+    background:#2b7cff;
+    color:white;
+    text-decoration:none;
+    padding:14px 28px;
+    border-radius:10px;
+    font-weight:bold;
+    transition:.25s;
+}
+
+.home-btn:hover{
+    background:#1d5fd1;
+    transform:translateY(-2px);
+}
+</style>
 
 </head>
 
 <body>
 
-<div id="progress-bar"></div>
+<div class="error-page">
 
-<!-- ================= NAVIGATION ================= -->
+<div class="error-box">
 
-<header>
+<img src="/Help-The-Refugees-official-site/images/logo.png"
+     alt="Help The Refugees"
+     width="120">
 
-<nav class="navbar">
-
-<div class="nav-left">
-
-<a href="index.html" class="logo">
-
-<img src="images/logo.png" alt="Help The Refugees Logo">
-
-<span>Help The Refugees</span>
-
-</a>
-
-</div>
-
-<ul class="nav-links">
-
-<li><a href="index.html">Home</a></li>
-
-<li class="dropdown">
-
-<a href="#">Games ▾</a>
-
-<ul class="dropdown-content">
-
-<li><a href="games/refugee-journey.html">Refugee Journey</a></li>
-
-<li><a href="games/safe-passage.html">Safe Passage</a></li>
-
-</ul>
-
-</li>
-
-<li class="dropdown">
-
-<a href="#">More Info ▾</a>
-
-<ul class="dropdown-content">
-
-<li><a href="more-info/world-crisis-map.html">World Crisis Map</a></li>
-
-<li><a href="more-info/hardships.html">Hardships of Refugees</a></li>
-
-<li><a href="more-info/videos.html">Videos</a></li>
-
-</ul>
-
-</li>
-
-<li><a href="feedback.html">Feedback</a></li>
-
-<li><a href="events.html">Events</a></li>
-
-</ul>
-
-<div class="menu-toggle">☰</div>
-
-</nav>
-
-</header>
-
-<!-- ================= 404 CONTENT ================= -->
-
-<section class="hero" style="min-height:80vh;">
-
-<div class="hero-overlay">
-
-<div class="hero-content">
-
-<h1 style="font-size:5rem;">404</h1>
+<h1>404</h1>
 
 <h2>Page Not Found</h2>
 
 <p>
-
-Sorry! The page you're looking for doesn't exist or may have been moved.
-
+Sorry, the page you're looking for doesn't exist or may have been moved.
 </p>
 
-<div style="margin-top:35px;">
-
-<a href="index.html" class="btn">
-
-🏠 Return Home
-
+<a class="home-btn"
+   href="/Help-The-Refugees-official-site/">
+🏠 Go to Home
 </a>
 
 </div>
 
 </div>
 
-</div>
-
-<img src="images/banner.png"
-     class="hero-image"
-     alt="404 Background">
-
-</section>
-
-<script src="script.js"></script>
+<script>
+// If someone presses Back then Home again,
+// always return to the site root.
+document.querySelector(".home-btn").addEventListener("click", function(e){
+    e.preventDefault();
+    window.location.href = "/Help-The-Refugees-official-site/";
+});
+</script>
 
 </body>
 
