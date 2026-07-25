@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+
+    <meta charset="UTF-8">
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>World Crisis Map | Help The Refugees</title>
+
+    <meta name="description" content="Explore refugee crises around the world through an interactive map.">
+
+    <link rel="stylesheet" href="../style.css">
+
+    <link rel="icon" href="../images/logo.png">
+
+</head>
+
+<body>
+
+<!-- Scroll Progress Bar -->
+
+<div id="progress-bar"></div>
+
+<!-- ================= NAVIGATION ================= -->
+
+<header>
+
+<nav class="navbar">
+
+<div class="nav-left">
+
+<a href="../index.html" class="logo">
+
+<img src="../images/logo.png" alt="Help The Refugees Logo">
+
+<span>Help The Refugees</span>
+
+</a>
+
+</div>
+
+<ul class="nav-links">
+
+<li><a href="../index.html">Home</a></li>
+
+<li class="dropdown">
+
+<a href="#">Games ▾</a>
+
+<ul class="dropdown-content">
+
+<li><a href="../games/refugee-journey.html">Refugee Journey</a></li>
+
+<li><a href="../games/safe-passage.html">Safe Passage</a></li>
+
+</ul>
+
+</li>
+
+<li class="dropdown">
+
+<a href="#" class="active">More Info ▾</a>
+
+<ul class="dropdown-content">
+
+<li><a href="world-crisis-map.html" class="active">World Crisis Map</a></li>
+
+<li><a href="hardships.html">Hardships of Refugees</a></li>
+
+<li><a href="videos.html">Videos</a></li>
+
+</ul>
+
+</li>
+
+<li><a href="../feedback.html">Feedback</a></li>
+
+<li><a href="../events.html">Events</a></li>
+
+</ul>
+
+<div class="menu-toggle">☰</div>
+
+</nav>
+
+</header>
+
+<!-- ================= HERO ================= -->
+
+<section class="hero" style="height:45vh;">
+
+<div class="hero-overlay">
+
+<div class="hero-content">
+
+<h1>World Crisis Map</h1>
+
+<p>
+Explore refugee movements and humanitarian crises around the globe.
+</p>
+
+</div>
+
+</div>
+
+<img src="../images/banner.png"
+     class="hero-image"
+     alt="World Crisis Map">
+
+</section>
+
+<!-- ================= MAP ================= -->
+
+<section class="reveal">
+
+<div class="container">
+
+<h2>Interactive Crisis Map</h2>
+
+<p class="section-description">
+
+Click on migration routes to learn about refugee crises, where people are fleeing from, and where they are seeking safety.
+
+</p>
+
+<div id="map-container">
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Refugee Crisis Map</title>
+<style>
+body{margin:0;font-family:Arial;background:#eaf7ff}
+h1{text-align:center}
+#info{max-width:980px;margin:12px auto;padding:14px;background:#fff;border:1px solid #bbb;border-radius:8px}
+svg{display:block;margin:auto;width:95%;max-width:1000px;background:#bfe8ff;border:1px solid #666}
+.land{fill:#9ccc7c;stroke:#5f8d4e;stroke-width:2}
+.route{stroke:#d11;stroke-width:4;fill:none;stroke-dasharray:10 8;animation:dash 1.2s linear infinite}
+.hit{fill:none;stroke:transparent;stroke-width:26;cursor:pointer}
+@keyframes dash{to{stroke-dashoffset:-36}}
+</style>
+</head>
+<body>
+<h1>Major Refugee Crises (Illustrative Map)</h1>
+
+<svg viewBox="0 0 1000 500">
+<defs><marker id="arrow" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto">
+<polygon points="0,0 8,4 0,8" fill="#d11"/></marker></defs>
+
+<rect width="1000" height="500" fill="#bfe8ff"/>
+<ellipse class="land" cx="170" cy="180" rx="110" ry="80"/>
+<ellipse class="land" cx="330" cy="290" rx="70" ry="110"/>
+<ellipse class="land" cx="520" cy="170" rx="110" ry="85"/>
+<ellipse class="land" cx="565" cy="285" rx="80" ry="110"/>
+<ellipse class="land" cx="810" cy="210" rx="145" ry="95"/>
+<ellipse class="land" cx="860" cy="360" rx="90" ry="55"/>
+
+<g id="routes"></g>
+<g id="dots"></g>
+</svg>
+
+<div id="info">
+<h2>Click any red route</h2>
+<p>This simplified map highlights several major refugee crises. Click anywhere along a red route to learn more.</p>
+</div>
+
+<script>
+const data=[
+{d:"M520 170 Q470 140 440 150",title:"Syria",text:"Since 2011, conflict in Syria has forced millions of people to flee their homes. Many sought safety in neighbouring countries including Türkiye, Lebanon and Jordan, while others were displaced within Syria."},
+{d:"M560 120 Q540 95 505 80",title:"Ukraine",text:"Russia's full-scale invasion of Ukraine in 2022 caused millions of people to flee to neighbouring European countries, especially Poland, Romania and Slovakia."},
+{d:"M520 250 Q450 235 395 230",title:"Sudan",text:"Armed conflict that intensified in 2023 displaced millions of people within Sudan and into neighbouring countries such as Chad, South Sudan and Egypt."},
+{d:"M760 220 Q720 210 690 215",title:"Myanmar",text:"Violence and persecution have forced many people, including Rohingya refugees, to flee Myanmar, particularly to Bangladesh."},
+{d:"M190 220 Q220 215 255 205",title:"Venezuela",text:"Economic hardship and political instability have led millions of Venezuelans to leave, with many settling in Colombia and other countries in South America."}
+];
+const routes=document.getElementById("routes");
+const dots=document.getElementById("dots");
+const info=document.getElementById("info");
+
+data.forEach(r=>{
+ const p=document.createElementNS("http://www.w3.org/2000/svg","path");
+ p.setAttribute("d",r.d);
+ p.setAttribute("class","route");
+ p.setAttribute("marker-end","url(#arrow)");
+ routes.appendChild(p);
+
+ const hit=document.createElementNS("http://www.w3.org/2000/svg","path");
+ hit.setAttribute("d",r.d);
+ hit.setAttribute("class","hit");
+ routes.appendChild(hit);
+
+ const len=p.getTotalLength();
+ const c=document.createElementNS("http://www.w3.org/2000/svg","circle");
+ c.setAttribute("r",5);
+ c.setAttribute("fill","#d11");
+ dots.appendChild(c);
+
+ let t=0;
+ (function anim(){
+   t=(t+0.003)%1;
+   const pt=p.getPointAtLength(len*t);
+   c.setAttribute("cx",pt.x);
+   c.setAttribute("cy",pt.y);
+   requestAnimationFrame(anim);
+ })();
+
+ hit.addEventListener("click",()=>{
+   info.innerHTML="<h2>"+r.title+" Refugee Crisis</h2><p>"+r.text+"</p>";
+ });
+});
+</script>
+</body>
+</html>
+
+</div>
+
+</div>
+
+</section>
+
+<script src="../script.js"></script>
+
+</body>
+
+</html>
