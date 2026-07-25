@@ -239,3 +239,53 @@ document.getElementById("news-title").textContent = "Unable to load the latest n
 console.error(error);
 
 });
+/* ================= COUNT-UP ANIMATION ================= */
+
+document.addEventListener("DOMContentLoaded", () => {
+
+    const counters = document.querySelectorAll(".count");
+
+    if (!counters.length) return;
+
+    const observer = new IntersectionObserver((entries) => {
+
+        entries.forEach(entry => {
+
+            if (!entry.isIntersecting) return;
+
+            const counter = entry.target;
+            const target = parseInt(counter.dataset.target, 10);
+            const duration = 2000;
+            const startTime = performance.now();
+
+            function update(currentTime) {
+
+                const elapsed = currentTime - startTime;
+                const progress = Math.min(elapsed / duration, 1);
+
+                // Ease-out animation
+                const eased = 1 - Math.pow(1 - progress, 3);
+
+                counter.textContent = Math.floor(eased * target);
+
+                if (progress < 1) {
+                    requestAnimationFrame(update);
+                } else {
+                    counter.textContent = target;
+                }
+
+            }
+
+            requestAnimationFrame(update);
+
+            observer.unobserve(counter);
+
+        });
+
+    }, {
+        threshold: 0.4
+    });
+
+    counters.forEach(counter => observer.observe(counter));
+
+});
