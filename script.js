@@ -27,29 +27,36 @@ window.addEventListener("scroll", () => {
    Reveal on Scroll
 =========================== */
 
+/* ===========================
+   Reveal on Scroll
+=========================== */
+
 const reveals = document.querySelectorAll(".reveal");
 
-function revealSections(){
+const revealObserver = new IntersectionObserver((entries) => {
 
-    const trigger = window.innerHeight * 0.85;
+    entries.forEach(entry => {
 
-    reveals.forEach(section => {
+        if (entry.isIntersecting) {
 
-        const top = section.getBoundingClientRect().top;
+            entry.target.classList.add("active");
 
-        if(top < trigger){
-
-            section.classList.add("active");
+            revealObserver.unobserve(entry.target);
 
         }
 
     });
 
-}
+}, {
+    threshold: 0.15,
+    rootMargin: "0px 0px -80px 0px"
+});
 
-window.addEventListener("scroll", revealSections);
+reveals.forEach(reveal => {
 
-window.addEventListener("load", revealSections);
+    revealObserver.observe(reveal);
+
+});
 
 /* ===========================
    Mobile Navigation
