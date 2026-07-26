@@ -10,6 +10,12 @@
     <title>World Crisis Map | Help The Refugees</title>
 
     <meta name="description" content="Explore refugee crises around the world through an interactive map.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://ishaantejthotapalli.github.io/Help-The-Refugees-official-site/more-info/world-crisis-map.html">
+    <meta property="og:title" content="World Refugee Crisis Map | Help The Refugees">
+    <meta property="og:description" content="Explore an educational map about major displacement crises and learn why people seek safety.">
+    <meta property="og:url" content="https://ishaantejthotapalli.github.io/Help-The-Refugees-official-site/more-info/world-crisis-map.html">
+    <meta property="og:type" content="website">
 
     <link rel="stylesheet" href="../style.css">
 
@@ -127,24 +133,17 @@ Click on migration routes to learn about refugee crises, where people are fleein
 
 <div id="map-container">
 
-<!DOCTYPE html>
-<html lang="en">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Refugee Crisis Map</title>
 <style>
-body{margin:0;font-family:Arial;background:#eaf7ff}
-h1{text-align:center}
-#info{max-width:980px;margin:12px auto;padding:14px;background:#fff;border:1px solid #bbb;border-radius:8px}
-svg{display:block;margin:auto;width:95%;max-width:1000px;background:#bfe8ff;border:1px solid #666}
-.land{fill:#9ccc7c;stroke:#5f8d4e;stroke-width:2}
-.route{stroke:#d11;stroke-width:4;fill:none;stroke-dasharray:10 8;animation:dash 1.2s linear infinite}
-.hit{fill:none;stroke:transparent;stroke-width:26;cursor:pointer}
+#map-container{font-family:Arial;background:#eaf7ff;padding:18px;border-radius:18px}
+#map-container h1{text-align:center}
+#map-container #info{max-width:980px;margin:12px auto;padding:14px;background:#fff;border:1px solid #bbb;border-radius:8px}
+#map-container svg{display:block;margin:auto;width:95%;max-width:1000px;background:#bfe8ff;border:1px solid #666}
+#map-container .land{fill:#9ccc7c;stroke:#5f8d4e;stroke-width:2}
+#map-container .route{stroke:#d11;stroke-width:4;fill:none;stroke-dasharray:10 8;animation:dash 1.2s linear infinite}
+#map-container .hit{fill:none;stroke:transparent;stroke-width:26;cursor:pointer}
 @keyframes dash{to{stroke-dashoffset:-36}}
+@media (prefers-reduced-motion:reduce){#map-container .route{animation:none}}
 </style>
-</head>
-<body>
 <h1>Major Refugee Crises (Illustrative Map)</h1>
 
 <svg viewBox="0 0 1000 500">
@@ -212,9 +211,6 @@ data.forEach(r=>{
  });
 });
 </script>
-</body>
-</html>
-
 </div>
 
 </div>
