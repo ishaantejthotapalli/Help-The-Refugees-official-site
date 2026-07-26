@@ -136,15 +136,18 @@ Every decision matters. Your choices can affect the safety, health and future of
 <style>
 #game-container{position:relative;max-width:640px;margin:auto;background:#20333d;color:#fff;font-family:Arial,sans-serif;border-radius:18px;overflow:hidden;box-shadow:0 18px 45px #0003}
 #game-container canvas{display:block;width:100%;height:auto;background:#6db3ff;image-rendering:pixelated}
-#game-container #hud{position:absolute;left:10px;top:10px;background:#10242ddd;padding:10px 12px;border:2px solid #fff8;border-radius:10px;display:none;z-index:3}
-#game-container #msg{position:absolute;bottom:82px;left:50%;transform:translateX(-50%);background:#10242dee;padding:10px 14px;border-radius:10px;display:none;max-width:90%;z-index:3;text-align:center}
+#game-container #hud{display:none;gap:10px;flex-wrap:wrap;padding:12px;background:#10242d;border-bottom:2px solid #fff5}
+#game-container .stat{display:grid;grid-template-columns:auto minmax(76px,1fr) auto;align-items:center;gap:7px;flex:1 1 135px;padding:7px 9px;background:#fff1;border-radius:10px;font-size:.9rem;font-weight:700}
+#game-container .stat progress{width:100%;height:10px;accent-color:#ffd166}
+#game-container .stat-value{min-width:2.4ch;text-align:right}
+#game-container #msg{display:none;min-height:44px;padding:10px 14px;background:#173b48;color:#fff;text-align:center;font-weight:700;border-bottom:2px solid #fff3}
 #game-container #menu,#game-container #end{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;background:#10242def;z-index:5;padding:16px}
 #game-container #end{display:none}
 #game-container .panel{background:#fff;color:#24333f;padding:24px;border:4px solid #ffd166;border-radius:18px;max-width:520px;text-align:center;box-shadow:0 12px 30px #0005}
 #game-container button{font:inherit;font-weight:700;padding:11px 18px;margin:7px;cursor:pointer;border:0;border-radius:999px;background:#218c54;color:#fff}
 #game-container button:hover,#game-container button:focus-visible{background:#176c40;outline:3px solid #ffd166;outline-offset:2px}
 #game-container #instructions{display:none;text-align:left;margin-top:12px}
-#game-container .touch-controls{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,48px);gap:5px;z-index:4}
+#game-container .touch-controls{display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,48px);justify-content:center;gap:5px;padding:8px;background:#10242d}
 #game-container .touch-controls button{padding:0;margin:0;font-size:1.3rem;background:#10242ddd}
 #game-container .touch-up{grid-column:2;grid-row:1}#game-container .touch-left{grid-column:1;grid-row:2}#game-container .touch-down{grid-column:2;grid-row:2}#game-container .touch-right{grid-column:3;grid-row:2}
 @media(pointer:coarse),(max-width:700px){#game-container .touch-controls{display:grid}}
@@ -169,13 +172,13 @@ Every decision matters. Your choices can affect the safety, health and future of
 </div>
 </div>
 
-<div id="hud">
-Food <span id=f>100</span><br>
-Water <span id=w>100</span><br>
-Hope <span id=h>100</span><br>
-Items: <span id=i>0</span>/3
+<div id="hud" aria-label="Journey status">
+<div class="stat"><span aria-hidden="true">🍎</span><span>Food <progress id="foodBar" max="100" value="100"></progress></span><span class="stat-value" id=f>100</span></div>
+<div class="stat"><span aria-hidden="true">💧</span><span>Water <progress id="waterBar" max="100" value="100"></progress></span><span class="stat-value" id=w>100</span></div>
+<div class="stat"><span aria-hidden="true">⭐</span><span>Hope <progress id="hopeBar" max="100" value="100"></progress></span><span class="stat-value" id=h>100</span></div>
+<div class="stat"><span aria-hidden="true">🎒</span><span>Supplies</span><span class="stat-value"><span id=i>0</span>/3</span></div>
 </div>
-<div id="msg"></div>
+<div id="msg" role="status" aria-live="polite"></div>
 <canvas id="c" width="640" height="480"></canvas>
 
 <div class="touch-controls" aria-label="Game movement controls">
@@ -208,6 +211,7 @@ const msg=document.getElementById("msg");
 const resultTitle=document.getElementById("resultTitle");
 const resultText=document.getElementById("resultText");
 const f=document.getElementById("f"),w=document.getElementById("w"),h=document.getElementById("h"),i=document.getElementById("i");
+const foodBar=document.getElementById("foodBar"),waterBar=document.getElementById("waterBar"),hopeBar=document.getElementById("hopeBar");
 const c=document.getElementById("c"),ctx=c.getContext("2d"),T=32;
 
 const ORIGINAL_MAP=[
@@ -232,7 +236,11 @@ let map=[],px=1,py=1,food=100,water=100,hope=100,items=0,done=false,running=fals
 const keys={};
 
 function clearKeys(){Object.keys(keys).forEach(key=>delete keys[key]);}
-function updateHud(){f.textContent=Math.max(0,food);w.textContent=Math.max(0,water);h.textContent=Math.max(0,hope);i.textContent=items;}
+function updateHud(){
+ const safeFood=Math.max(0,food),safeWater=Math.max(0,water),safeHope=Math.max(0,hope);
+ f.textContent=safeFood;w.textContent=safeWater;h.textContent=safeHope;i.textContent=items;
+ foodBar.value=safeFood;waterBar.value=safeWater;hopeBar.value=safeHope;
+}
 function show(text){
  clearTimeout(messageTimer);msg.style.display="block";msg.textContent=text;
  messageTimer=setTimeout(()=>msg.style.display="none",2500);
@@ -248,7 +256,7 @@ function resetGame(){
 }
 
 function startGame(){
- resetGame();menu.style.display="none";endPanel.style.display="none";hud.style.display="block";running=true;show("Good luck! Look for supplies and helpers.");
+ resetGame();menu.style.display="none";endPanel.style.display="none";hud.style.display="flex";running=true;show("Good luck! Look for supplies and helpers.");
 }
 
 function endGame(success,text){

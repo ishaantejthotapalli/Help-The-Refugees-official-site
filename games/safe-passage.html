@@ -137,16 +137,27 @@ Can you help a refugee family make the right choices and reach safety?
 #game-container .panel{background:#fff;color:#24333f;padding:24px;border:4px solid #ffd166;border-radius:18px;max-width:540px;text-align:center;box-shadow:0 12px 30px #0005}
 #game-container button{padding:11px 18px;margin:7px;font-size:1rem;font-weight:700;cursor:pointer;border:0;border-radius:999px;background:#218c54;color:#fff}
 #game-container button:hover,#game-container button:focus-visible{background:#176c40;outline:3px solid #ffd166;outline-offset:2px}
-#game-container #hud{position:absolute;left:10px;top:10px;background:#10242ddd;padding:10px 12px;border:2px solid #fff8;border-radius:10px;display:none;z-index:3}
-#game-container .touch-controls{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);display:none;grid-template-columns:repeat(3,54px);grid-template-rows:repeat(2,48px);gap:5px;z-index:4}
+#game-container #hud{display:none;gap:10px;flex-wrap:wrap;padding:12px;background:#10242d;border-bottom:2px solid #fff5}
+#game-container .meter{flex:1 1 160px;display:grid;grid-template-columns:auto 1fr auto;align-items:center;gap:7px;padding:7px 9px;background:#fff1;border-radius:10px;font-size:.9rem;font-weight:700}
+#game-container progress{width:100%;height:11px;accent-color:#ffd166}
+#game-container #objectives{flex:2 1 330px;display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:7px 9px;background:#fff1;border-radius:10px}
+#game-container .objective{padding:4px 8px;border:2px solid #fff6;border-radius:999px;font-size:.85rem;font-weight:700}
+#game-container .objective.done{background:#1f8a56;border-color:#8ff0b9}
+#game-container #message{display:none;min-height:42px;padding:9px 14px;background:#173b48;text-align:center;font-weight:700;border-bottom:2px solid #fff3}
+#game-container .touch-controls{display:none;grid-template-columns:repeat(3,54px);grid-template-rows:repeat(2,48px);justify-content:center;gap:5px;padding:8px;background:#10242d}
 #game-container .touch-controls button{padding:0;margin:0;font-size:1.3rem;background:#10242ddd}
 #game-container .touch-up{grid-column:2;grid-row:1}#game-container .touch-left{grid-column:1;grid-row:2}#game-container .touch-down{grid-column:2;grid-row:2}#game-container .touch-right{grid-column:3;grid-row:2}
 @media(pointer:coarse),(max-width:700px){#game-container .touch-controls{display:grid}}
 </style>
 <div id=menu><div class=panel><h1>🛡️ Safe Passage</h1>
-<p>Guide your companion to the welcome shelter. Create space when people with exclamation badges block the route.</p>
-<p>Move with WASD, Arrow Keys or the on-screen controls.</p><button id=play>Play</button></div></div>
-<div id=hud>Safety: <span id=hp>100</span></div>
+<p>Stay with your companion, collect three essentials, and find the openings through the route to unlock the welcome shelter.</p>
+<p>Move with WASD, Arrow Keys or the on-screen controls. A straight path will not work—you will need to explore together.</p><button id=play>Play</button></div></div>
+<div id=hud aria-label="Safe Passage status">
+<div class=meter><span>Safety</span><progress id=safetyBar max=100 value=100></progress><span id=hp>100</span></div>
+<div class=meter><span>Together</span><progress id=togetherBar max=100 value=100></progress><span id=togetherValue>100</span></div>
+<div id=objectives aria-label="Required items"><strong>Essentials:</strong><span class=objective id=waterStatus>○ Water</span><span class=objective id=documentStatus>○ Document</span><span class=objective id=aidStatus>○ First aid</span></div>
+</div>
+<div id=message role=status aria-live=polite></div>
 <div id=end role="dialog" aria-modal="true" aria-labelledby="resultTitle"><div class=panel><h2 id=resultTitle>Round complete</h2><p id=result></p><button id=retry>Try Again</button><button id=backToMenu>Return to Menu</button></div></div>
 <canvas id=c width=800 height=512></canvas>
 <div class="touch-controls" aria-label="Game movement controls">
@@ -161,11 +172,23 @@ const cv=document.getElementById("c"),ctx=cv.getContext("2d");
 const menu=document.getElementById("menu"),endPanel=document.getElementById("end"),hud=document.getElementById("hud");
 const play=document.getElementById("play"),retry=document.getElementById("retry"),backToMenu=document.getElementById("backToMenu");
 const result=document.getElementById("result"),resultTitle=document.getElementById("resultTitle"),hp=document.getElementById("hp");
+const safetyBar=document.getElementById("safetyBar"),togetherBar=document.getElementById("togetherBar"),togetherValue=document.getElementById("togetherValue");
+const message=document.getElementById("message"),waterStatus=document.getElementById("waterStatus"),documentStatus=document.getElementById("documentStatus"),aidStatus=document.getElementById("aidStatus");
 const player={x:100,y:256,r:13,s:3.2};
 const refugee={x:140,y:256,r:12,h:100};
-const shelter={x:740,y:256,w:38,h:72};
+const shelter={x:750,y:390,w:38,h:72};
+const barriers=[
+ {x:250,y:20,w:28,h:250},{x:250,y:370,w:28,h:122},
+ {x:500,y:20,w:28,h:105},{x:500,y:225,w:28,h:267},
+ {x:665,y:20,w:26,h:285}
+];
+const essentials=[
+ {id:"water",x:180,y:120,label:"Water",collected:false},
+ {id:"document",x:390,y:405,label:"Document",collected:false},
+ {id:"aid",x:610,y:155,label:"First aid",collected:false}
+];
 const keys={};
-let running=false,finished=false,mobs=[];
+let running=false,finished=false,mobs=[],togetherness=100,hitCooldown=0,messageTimer=null,shelterHintShown=false;
 
 const playerLook={skin:"#6f4e37",hair:"#16100c",shirt:"#00b4d8",pants:"#25344f",accent:"#ffd166",style:"vest"};
 const refugeeLook={skin:"#d9a066",hair:"#4b2e20",shirt:"#f77f00",pants:"#4f5d75",accent:"#6a4c93",style:"scarf"};
@@ -182,43 +205,81 @@ const mobLooks=[
 
 function clearKeys(){Object.keys(keys).forEach(key=>delete keys[key]);}
 function makeMob(index){
- const lane=index%4;
- return {x:360+(index*67)%360,y:75+lane*105+(index%2)*24,r:13,s:1.05+(index%3)*.08,look:mobLooks[index]};
+ const posts=[[205,155],[315,350],[430,415],[575,135],[630,245],[720,340]];
+ const [x,y]=posts[index%posts.length];
+ return {x,y,homeX:x,homeY:y,r:13,s:.72+(index%3)*.08,look:mobLooks[index]};
+}
+function showMessage(text){
+ clearTimeout(messageTimer);message.textContent=text;message.style.display="block";
+ messageTimer=setTimeout(()=>{if(running)message.style.display="none";},2600);
+}
+function updateHud(){
+ const safety=Math.max(0,Math.round(refugee.h)),together=Math.max(0,Math.round(togetherness));
+ hp.textContent=safety;safetyBar.value=safety;togetherValue.textContent=together;togetherBar.value=together;
+ essentials.forEach(item=>{
+  const element=item.id==="water"?waterStatus:item.id==="document"?documentStatus:aidStatus;
+  element.textContent=(item.collected?"✓ ":"○ ")+item.label;element.classList.toggle("done",item.collected);
+ });
 }
 function resetGame(){
  Object.assign(player,{x:100,y:256});Object.assign(refugee,{x:140,y:256,h:100});
- mobs=mobLooks.map((_,index)=>makeMob(index));running=false;finished=false;clearKeys();hp.textContent="100";
+ essentials.forEach(item=>item.collected=false);togetherness=100;hitCooldown=0;shelterHintShown=false;
+ mobs=mobLooks.slice(0,6).map((_,index)=>makeMob(index));running=false;finished=false;clearKeys();clearTimeout(messageTimer);message.style.display="none";updateHud();
 }
-function startGame(){resetGame();menu.style.display="none";endPanel.style.display="none";hud.style.display="block";running=true;}
+function startGame(){resetGame();menu.style.display="none";endPanel.style.display="none";hud.style.display="flex";running=true;showMessage("First, find the water and stay close to your companion.");}
 function endGame(success,text){
  if(finished)return;
- finished=true;running=false;clearKeys();hud.style.display="none";
+ finished=true;running=false;clearKeys();hud.style.display="none";message.style.display="none";
  resultTitle.textContent=success?"Safe arrival!":"Let’s try another plan";result.textContent=text;endPanel.style.display="flex";
 }
 function dist(a,b){return Math.hypot(a.x-b.x,a.y-b.y);}
+
+function circleHitsRect(person,rect){
+ const closestX=Math.max(rect.x,Math.min(person.x,rect.x+rect.w));
+ const closestY=Math.max(rect.y,Math.min(person.y,rect.y+rect.h));
+ return Math.hypot(person.x-closestX,person.y-closestY)<person.r;
+}
+function movePerson(person,dx,dy){
+ const oldX=person.x;person.x=Math.max(person.r,Math.min(800-person.r,person.x+dx));
+ if(barriers.some(barrier=>circleHitsRect(person,barrier)))person.x=oldX;
+ const oldY=person.y;person.y=Math.max(20+person.r,Math.min(492-person.r,person.y+dy));
+ if(barriers.some(barrier=>circleHitsRect(person,barrier)))person.y=oldY;
+}
 
 function update(){
  if(!running)return;
  const dx=(keys.d||keys.ArrowRight?1:0)-(keys.a||keys.ArrowLeft?1:0);
  const dy=(keys.s||keys.ArrowDown?1:0)-(keys.w||keys.ArrowUp?1:0);
  const length=Math.hypot(dx,dy)||1;
- player.x+=dx/length*player.s;player.y+=dy/length*player.s;
- player.x=Math.max(16,Math.min(784,player.x));player.y=Math.max(30,Math.min(482,player.y));
+ movePerson(player,dx/length*player.s,dy/length*player.s);
 
  const rx=player.x-refugee.x,ry=player.y-refugee.y,followDistance=Math.hypot(rx,ry);
- if(followDistance>28){refugee.x+=rx/followDistance*2;refugee.y+=ry/followDistance*2;}
+ if(followDistance>30)movePerson(refugee,rx/followDistance*2.45,ry/followDistance*2.45);
+ if(followDistance>115)togetherness=Math.max(0,togetherness-.32);
+ else if(followDistance<72)togetherness=Math.min(100,togetherness+.24);
 
- mobs.forEach(mob=>{
-  const tx=refugee.x-mob.x,ty=refugee.y-mob.y,distance=Math.hypot(tx,ty)||1;
-  if(dist(player,mob)<34){mob.x-=tx/distance*2.7;mob.y-=ty/distance*2.7;}
-  else{mob.x+=tx/distance*mob.s;mob.y+=ty/distance*mob.s;}
-  mob.x=Math.max(16,Math.min(784,mob.x));mob.y=Math.max(30,Math.min(482,mob.y));
-  if(dist(mob,refugee)<24)refugee.h=Math.max(0,refugee.h-.22);
+ essentials.forEach(item=>{
+  if(!item.collected&&dist(player,item)<25&&dist(refugee,item)<65&&togetherness>=30){
+   item.collected=true;showMessage(`${item.label} collected. ${essentials.every(entry=>entry.collected)?"The shelter is now open!":"Keep looking for the next essential."}`);
+  }
  });
 
- hp.textContent=Math.round(refugee.h);
+ mobs.forEach(mob=>{
+  const target=dist(mob,refugee)<105?refugee:{x:mob.homeX,y:mob.homeY};
+  const tx=target.x-mob.x,ty=target.y-mob.y,distance=Math.hypot(tx,ty)||1;
+  if(dist(player,mob)<38)movePerson(mob,-tx/distance*2.2,-ty/distance*2.2);
+  else movePerson(mob,tx/distance*mob.s,ty/distance*mob.s);
+  if(dist(mob,refugee)<25&&hitCooldown<=0){refugee.h=Math.max(0,refugee.h-9);hitCooldown=70;showMessage("A crowded crossing slowed you down. Make space and choose another line.");}
+ });
+
+ if(hitCooldown>0)hitCooldown--;
+ updateHud();
  if(refugee.h<=0)endGame(false,"The route became too difficult this time. Try again and use your guide to create more space.");
- else if(refugee.x>shelter.x-8&&Math.abs(refugee.y-shelter.y)<52)endGame(true,"You stayed together and reached the welcome shelter safely. Great teamwork!");
+ else if(togetherness<=0)endGame(false,"You became separated on the route. Try again, slow down at corners, and travel together.");
+ else if(dist(player,shelter)<45&&dist(refugee,shelter)<48){
+  if(essentials.every(item=>item.collected))endGame(true,"You gathered the essentials, made thoughtful route choices, and arrived together. Great teamwork!");
+  else if(!shelterHintShown){shelterHintShown=true;showMessage("The shelter opens after you collect all three essentials together.");}
+ }
 }
 
 function drawPerson(person,look,scale=1){
@@ -243,10 +304,25 @@ function drawPerson(person,look,scale=1){
 }
 
 function drawShelter(){
+ const unlocked=essentials.every(item=>item.collected);
  ctx.fillStyle="#fff7e0";ctx.fillRect(shelter.x-20,shelter.y-36,shelter.w,shelter.h);
  ctx.fillStyle="#e76f51";ctx.beginPath();ctx.moveTo(shelter.x-26,shelter.y-35);ctx.lineTo(shelter.x-1,shelter.y-58);ctx.lineTo(shelter.x+24,shelter.y-35);ctx.fill();
- ctx.fillStyle="#218c54";ctx.fillRect(shelter.x-8,shelter.y+5,14,31);
- ctx.fillStyle="#24333f";ctx.font="bold 12px Arial";ctx.fillText("SAFE",shelter.x-17,shelter.y-12);
+ ctx.fillStyle=unlocked?"#218c54":"#6c757d";ctx.fillRect(shelter.x-8,shelter.y+5,14,31);
+ ctx.fillStyle="#24333f";ctx.font="bold 12px Arial";ctx.fillText(unlocked?"OPEN":"LOCKED",shelter.x-(unlocked?17:25),shelter.y-12);
+}
+function drawBarrier(barrier){
+ ctx.fillStyle="#66584a";ctx.fillRect(barrier.x,barrier.y,barrier.w,barrier.h);
+ ctx.fillStyle="#887664";
+ for(let y=barrier.y+6;y<barrier.y+barrier.h;y+=24)ctx.fillRect(barrier.x+4,y,barrier.w-8,8);
+}
+function drawEssential(item){
+ if(item.collected)return;
+ ctx.save();ctx.translate(item.x,item.y);ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(0,0,17,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle=item.id==="water"?"#168aad":item.id==="document"?"#9c6644":"#d62828";
+ if(item.id==="water"){ctx.fillRect(-5,-9,10,18);ctx.fillStyle="#8ecae6";ctx.fillRect(-4,0,8,8);}
+ else if(item.id==="document"){ctx.fillRect(-8,-10,16,20);ctx.fillStyle="#fff";ctx.fillRect(-5,-6,10,2);ctx.fillRect(-5,-1,8,2);}
+ else{ctx.fillRect(-10,-4,20,8);ctx.fillRect(-4,-10,8,20);}
+ ctx.restore();
 }
 function drawBarrierBadge(mob){ctx.fillStyle="#fff";ctx.beginPath();ctx.arc(mob.x+13,mob.y-22,8,0,Math.PI*2);ctx.fill();ctx.fillStyle="#d62828";ctx.font="bold 12px Arial";ctx.fillText("!",mob.x+11,mob.y-18);}
 
@@ -273,8 +349,11 @@ backToMenu.onclick=()=>{resetGame();endPanel.style.display="none";hud.style.disp
  update();ctx.clearRect(0,0,800,512);
  ctx.fillStyle="#78c679";ctx.fillRect(0,0,800,512);
  ctx.fillStyle="#53636b";ctx.fillRect(0,0,800,20);ctx.fillRect(0,492,800,20);
- drawShelter();drawPerson(refugee,refugeeLook,.9);drawPerson(player,playerLook,1);
+ barriers.forEach(drawBarrier);essentials.forEach(drawEssential);drawShelter();
+ ctx.save();ctx.setLineDash([6,6]);ctx.strokeStyle=togetherness<35?"#d62828":"#fff8";ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(player.x,player.y);ctx.lineTo(refugee.x,refugee.y);ctx.stroke();ctx.restore();
+ drawPerson(refugee,refugeeLook,.9);drawPerson(player,playerLook,1);
  mobs.forEach(mob=>{drawPerson(mob,mob.look,.9);drawBarrierBadge(mob);});
+ if(hitCooldown>0&&Math.floor(hitCooldown/6)%2===0){ctx.strokeStyle="#ffd166";ctx.lineWidth=4;ctx.strokeRect(3,23,794,466);}
  requestAnimationFrame(loop);
 })();
 
