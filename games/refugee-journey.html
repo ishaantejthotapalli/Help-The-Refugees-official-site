@@ -134,30 +134,36 @@ Every decision matters. Your choices can affect the safety, health and future of
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Refugee Journey (Pixel)</title>
 <style>
-body{margin:0;background:#222;color:#fff;font-family:monospace;overflow:visible}
-canvas{display:block;margin:auto;background:#6db3ff;image-rendering:pixelated}
-#hud{position:absolute;left:10px;top:10px;background:#0008;padding:8px;border:2px solid #888;display:none}
-#msg{position:absolute;bottom:10px;left:50%;transform:translateX(-50%);background:#000b;padding:8px;display:none;max-width:600px}
-#menu{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;background:#111}
-.panel{background:#333;padding:24px;border:3px solid #888;max-width:520px;text-align:center}
-button{font:inherit;padding:10px 20px;margin:8px;cursor:pointer}
-#instructions{display:none;text-align:left;margin-top:12px}
+#game-container{position:relative;max-width:640px;margin:auto;background:#20333d;color:#fff;font-family:Arial,sans-serif;border-radius:18px;overflow:hidden;box-shadow:0 18px 45px #0003}
+#game-container canvas{display:block;width:100%;height:auto;background:#6db3ff;image-rendering:pixelated}
+#game-container #hud{position:absolute;left:10px;top:10px;background:#10242ddd;padding:10px 12px;border:2px solid #fff8;border-radius:10px;display:none;z-index:3}
+#game-container #msg{position:absolute;bottom:82px;left:50%;transform:translateX(-50%);background:#10242dee;padding:10px 14px;border-radius:10px;display:none;max-width:90%;z-index:3;text-align:center}
+#game-container #menu,#game-container #end{position:absolute;inset:0;display:flex;justify-content:center;align-items:center;background:#10242def;z-index:5;padding:16px}
+#game-container #end{display:none}
+#game-container .panel{background:#fff;color:#24333f;padding:24px;border:4px solid #ffd166;border-radius:18px;max-width:520px;text-align:center;box-shadow:0 12px 30px #0005}
+#game-container button{font:inherit;font-weight:700;padding:11px 18px;margin:7px;cursor:pointer;border:0;border-radius:999px;background:#218c54;color:#fff}
+#game-container button:hover,#game-container button:focus-visible{background:#176c40;outline:3px solid #ffd166;outline-offset:2px}
+#game-container #instructions{display:none;text-align:left;margin-top:12px}
+#game-container .touch-controls{position:absolute;bottom:8px;left:50%;transform:translateX(-50%);display:none;grid-template-columns:repeat(3,52px);grid-template-rows:repeat(2,48px);gap:5px;z-index:4}
+#game-container .touch-controls button{padding:0;margin:0;font-size:1.3rem;background:#10242ddd}
+#game-container .touch-up{grid-column:2;grid-row:1}#game-container .touch-left{grid-column:1;grid-row:2}#game-container .touch-down{grid-column:2;grid-row:2}#game-container .touch-right{grid-column:3;grid-row:2}
+@media(pointer:coarse),(max-width:700px){#game-container .touch-controls{display:grid}}
 </style>
 
 <div id="menu">
 <div class="panel">
 <h1>🌍 Refugee Journey</h1>
-<p>A short educational pixel game.</p>
+<p>A short educational journey with friendly miniature characters.</p>
 <button id="playBtn">▶ Play</button>
 <button id="instBtn">📖 Instructions</button>
 <div id="instructions">
 <p><b>Goal:</b> Reach the refugee camp.</p>
 <ul>
-<li>Move with WASD or Arrow Keys.</li>
-<li>Collect food (🟧) and water (🟦).</li>
-<li>Talk to volunteers (🟨).</li>
-<li>Collect at least 2 supplies before crossing the border (🟫).</li>
-<li>Reach the camp (⬜).</li>
+<li>Move with WASD, Arrow Keys or the on-screen controls.</li>
+<li>Collect the food packs and water bottles.</li>
+<li>Talk to the two uniquely dressed volunteers.</li>
+<li>Collect at least two supplies before crossing the checkpoint.</li>
+<li>Reach the welcome centre.</li>
 </ul>
 </div>
 </div>
@@ -172,15 +178,39 @@ Items: <span id=i>0</span>/3
 <div id="msg"></div>
 <canvas id="c" width="640" height="480"></canvas>
 
+<div class="touch-controls" aria-label="Game movement controls">
+<button class="touch-up" data-direction="up" aria-label="Move up">↑</button>
+<button class="touch-left" data-direction="left" aria-label="Move left">←</button>
+<button class="touch-down" data-direction="down" aria-label="Move down">↓</button>
+<button class="touch-right" data-direction="right" aria-label="Move right">→</button>
+</div>
+
+<div id="end" role="dialog" aria-modal="true" aria-labelledby="resultTitle">
+<div class="panel">
+<h2 id="resultTitle">Journey complete</h2>
+<p id="resultText"></p>
+<button id="retryBtn">Try Again</button>
+<button id="menuBtn">Return to Menu</button>
+</div>
+</div>
+
 <script>
+const game=document.getElementById("game-container");
 const menu=document.getElementById("menu");
+const endPanel=document.getElementById("end");
 const playBtn=document.getElementById("playBtn");
+const retryBtn=document.getElementById("retryBtn");
+const menuBtn=document.getElementById("menuBtn");
 const instBtn=document.getElementById("instBtn");
 const inst=document.getElementById("instructions");
-instBtn.onclick=()=>inst.style.display=inst.style.display==="block"?"none":"block";
-
+const hud=document.getElementById("hud");
+const msg=document.getElementById("msg");
+const resultTitle=document.getElementById("resultTitle");
+const resultText=document.getElementById("resultText");
+const f=document.getElementById("f"),w=document.getElementById("w"),h=document.getElementById("h"),i=document.getElementById("i");
 const c=document.getElementById("c"),ctx=c.getContext("2d"),T=32;
-const map=[
+
+const ORIGINAL_MAP=[
 "####################",
 "#P....F......N....B#",
 "#.####....#####....#",
@@ -191,57 +221,120 @@ const map=[
 "#.......####.......#",
 "#..............C...#",
 "####################"];
-let px=1,py=1,food=100,water=100,hope=100,items=0,done=false,running=false;
+
+const playerLook={skin:"#8d5524",hair:"#24150d",shirt:"#ff6b6b",pants:"#243b53",accent:"#ffd166",style:"backpack"};
+const volunteerLooks=[
+ {skin:"#f1c27d",hair:"#6b3e26",shirt:"#ffd166",pants:"#375a7f",accent:"#e63946",style:"cap"},
+ {skin:"#c68642",hair:"#1f1a17",shirt:"#9b5de5",pants:"#344e41",accent:"#00bbf9",style:"scarf"}
+];
+
+let map=[],px=1,py=1,food=100,water=100,hope=100,items=0,done=false,running=false,messageTimer=null;
 const keys={};
-document.onkeydown=e=>keys[e.key]=1;
-document.onkeyup=e=>keys[e.key]=0;
-function show(s){msg.style.display="block";msg.textContent=s;setTimeout(()=>msg.style.display="none",3500);}
-function tile(x,y){return map[y][x]}
-function setTile(x,y,ch){map[y]=map[y].substring(0,x)+ch+map[y].substring(x+1);}
-for(let y=0;y<map.length;y++)for(let x=0;x<map[y].length;x++)if(map[y][x]=="P"){px=x;py=y;setTile(x,y,'.');}
-function move(dx,dy){
- let nx=px+dx,ny=py+dy,ch=tile(nx,ny);
- if(ch=="#")return;
- px=nx;py=ny;
- if(ch=="F"){food=Math.min(100,food+25);items++;setTile(nx,ny,'.');show("Collected food.");}
- if(ch=="W"){water=Math.min(100,water+25);items++;setTile(nx,ny,'.');show("Collected water.");}
- if(ch=="N"){hope=Math.min(100,hope+15);setTile(nx,ny,'.');show("A volunteer gives encouragement.");}
- if(ch=="B"){if(items<2){show("Collect at least 2 supplies first.");px-=dx;py-=dy;}else{show("Border crossed!");setTile(nx,ny,'.');}}
- if(ch=="C"&&!done){done=true;show("You reached safety. Thanks for learning about refugee journeys.");}
+
+function clearKeys(){Object.keys(keys).forEach(key=>delete keys[key]);}
+function updateHud(){f.textContent=Math.max(0,food);w.textContent=Math.max(0,water);h.textContent=Math.max(0,hope);i.textContent=items;}
+function show(text){
+ clearTimeout(messageTimer);msg.style.display="block";msg.textContent=text;
+ messageTimer=setTimeout(()=>msg.style.display="none",2500);
 }
-playBtn.onclick=()=>{
- menu.style.display="none";
- hud.style.display="block";
- running=true;
- show("Good luck!");
-};
+function tile(x,y){return map[y]?.[x]||"#";}
+function setTile(x,y,ch){map[y]=map[y].substring(0,x)+ch+map[y].substring(x+1);}
+
+function resetGame(){
+ map=ORIGINAL_MAP.slice();px=1;py=1;food=100;water=100;hope=100;items=0;done=false;running=false;
+ clearKeys();clearTimeout(messageTimer);msg.style.display="none";
+ for(let y=0;y<map.length;y++)for(let x=0;x<map[y].length;x++)if(map[y][x]==="P"){px=x;py=y;setTile(x,y,".");}
+ updateHud();
+}
+
+function startGame(){
+ resetGame();menu.style.display="none";endPanel.style.display="none";hud.style.display="block";running=true;show("Good luck! Look for supplies and helpers.");
+}
+
+function endGame(success,text){
+ if(done)return;
+ done=true;running=false;clearKeys();hud.style.display="none";msg.style.display="none";
+ resultTitle.textContent=success?"You reached safety!":"That was a difficult journey";
+ resultText.textContent=text;endPanel.style.display="flex";
+}
+
+function move(dx,dy){
+ const nx=px+dx,ny=py+dy,ch=tile(nx,ny);
+ if(ch==="#")return;
+ px=nx;py=ny;
+ if(ch==="F"){food=Math.min(100,food+25);items++;setTile(nx,ny,".");show("You found a food pack.");}
+ if(ch==="W"){water=Math.min(100,water+25);items++;setTile(nx,ny,".");show("You found clean water.");}
+ if(ch==="N"){hope=Math.min(100,hope+15);setTile(nx,ny,".");show("A volunteer shared encouragement.");}
+ if(ch==="B"){
+  if(items<2){show("Find at least two supplies before the checkpoint.");px-=dx;py-=dy;}
+  else{show("Checkpoint crossed safely.");setTile(nx,ny,".");}
+ }
+ if(ch==="C")endGame(true,"You planned carefully, found help and reached the welcome centre. Thanks for learning with us.");
+ updateHud();
+}
+
+function drawPerson(x,y,look,scale=1){
+ const cx=x+16,top=y+4;
+ ctx.fillStyle=look.pants;ctx.fillRect(cx-6*scale,top+17*scale,5*scale,10*scale);ctx.fillRect(cx+1*scale,top+17*scale,5*scale,10*scale);
+ ctx.fillStyle=look.shirt;ctx.fillRect(cx-7*scale,top+10*scale,14*scale,10*scale);
+ ctx.fillStyle=look.skin;ctx.beginPath();ctx.arc(cx,top+7*scale,6*scale,0,Math.PI*2);ctx.fill();
+ ctx.fillStyle=look.hair;ctx.beginPath();ctx.arc(cx,top+5*scale,6*scale,Math.PI,Math.PI*2);ctx.fill();
+ ctx.fillStyle=look.accent;
+ if(look.style==="backpack")ctx.fillRect(cx-10*scale,top+11*scale,4*scale,9*scale);
+ if(look.style==="cap"){ctx.fillRect(cx-6*scale,top,12*scale,3*scale);ctx.fillRect(cx+4*scale,top+2*scale,5*scale,2*scale);}
+ if(look.style==="scarf")ctx.fillRect(cx-7*scale,top+9*scale,14*scale,3*scale);
+}
+
+function drawFood(x,y){ctx.fillStyle="#f4a261";ctx.fillRect(x+8,y+9,16,15);ctx.fillStyle="#fff4";ctx.fillRect(x+11,y+12,10,3);ctx.fillStyle="#8d5524";ctx.fillRect(x+12,y+6,8,4);}
+function drawWater(x,y){ctx.fillStyle="#e8f8ff";ctx.fillRect(x+11,y+7,10,19);ctx.fillStyle="#00b4d8";ctx.fillRect(x+12,y+14,8,11);ctx.fillStyle="#226f8a";ctx.fillRect(x+13,y+4,6,4);}
+function drawCheckpoint(x,y){ctx.fillStyle="#7a4b18";ctx.fillRect(x+3,y+2,5,28);ctx.fillRect(x+24,y+2,5,28);ctx.fillStyle="#ffd166";ctx.fillRect(x+5,y+7,21,4);}
+function drawCentre(x,y){ctx.fillStyle="#f7fff7";ctx.fillRect(x+3,y+10,26,19);ctx.fillStyle="#e76f51";ctx.beginPath();ctx.moveTo(x+1,y+11);ctx.lineTo(x+16,y+2);ctx.lineTo(x+31,y+11);ctx.fill();ctx.fillStyle="#218c54";ctx.fillRect(x+13,y+18,7,11);}
+
+document.addEventListener("keydown",event=>{
+ if(!running)return;
+ if(["ArrowUp","ArrowDown","ArrowLeft","ArrowRight","w","a","s","d"].includes(event.key))event.preventDefault();
+ keys[event.key]=1;
+});
+document.addEventListener("keyup",event=>delete keys[event.key]);
+window.addEventListener("blur",clearKeys);
+document.addEventListener("visibilitychange",()=>{if(document.hidden)clearKeys();});
+
+game.querySelectorAll("[data-direction]").forEach(button=>{
+ const directions={up:[0,-1],down:[0,1],left:[-1,0],right:[1,0]};
+ button.addEventListener("pointerdown",event=>{event.preventDefault();if(running)move(...directions[button.dataset.direction]);});
+});
+
+instBtn.onclick=()=>inst.style.display=inst.style.display==="block"?"none":"block";
+playBtn.onclick=startGame;retryBtn.onclick=startGame;
+menuBtn.onclick=()=>{resetGame();endPanel.style.display="none";hud.style.display="none";menu.style.display="flex";};
+
 setInterval(()=>{
  if(!running||done)return;
  if(keys.a||keys.ArrowLeft)move(-1,0);
  else if(keys.d||keys.ArrowRight)move(1,0);
  else if(keys.w||keys.ArrowUp)move(0,-1);
  else if(keys.s||keys.ArrowDown)move(0,1);
- food--;water--;
- if(food<30||water<30)hope--;
- if(food<=0||water<=0||hope<=0){alert("Journey failed. Refresh to try again.");location.reload();}
- f.textContent=food;w.textContent=water;h.textContent=hope;i.textContent=items;
+ food--;water--;if(food<30||water<30)hope--;updateHud();
+ if(food<=0||water<=0||hope<=0)endGame(false,"Your supplies ran out before you reached safety. You can try a new route whenever you are ready.");
 },180);
 
 (function draw(){
  ctx.clearRect(0,0,c.width,c.height);
+ let volunteerIndex=0;
  for(let y=0;y<map.length;y++)for(let x=0;x<map[y].length;x++){
-  let ch=map[y][x],sx=x*T,sy=y*T;
-  ctx.fillStyle=(ch=="#")?"#555":"#6fbf73";ctx.fillRect(sx,sy,T,T);
-  if(ch=="F"){ctx.fillStyle="orange";ctx.fillRect(sx+8,sy+8,16,16);}
-  if(ch=="W"){ctx.fillStyle="cyan";ctx.fillRect(sx+8,sy+8,16,16);}
-  if(ch=="N"){ctx.fillStyle="yellow";ctx.fillRect(sx+10,sy+6,12,20);}
-  if(ch=="B"){ctx.fillStyle="#7a4b18";ctx.fillRect(sx,sy,T,T);}
-  if(ch=="C"){ctx.fillStyle="white";ctx.fillRect(sx+4,sy+4,24,24);}
+  const ch=map[y][x],sx=x*T,sy=y*T;
+  ctx.fillStyle=ch==="#"?"#53636b":"#71bd72";ctx.fillRect(sx,sy,T,T);
+  if(ch==="F")drawFood(sx,sy);
+  if(ch==="W")drawWater(sx,sy);
+  if(ch==="N")drawPerson(sx,sy,volunteerLooks[volunteerIndex++%volunteerLooks.length],.85);
+  if(ch==="B")drawCheckpoint(sx,sy);
+  if(ch==="C")drawCentre(sx,sy);
  }
- ctx.fillStyle="red";
- ctx.fillRect(px*T+6,py*T+6,20,20);
+ drawPerson(px*T,py*T,playerLook,.9);
  requestAnimationFrame(draw);
 })();
+
+resetGame();
 </script>
 
 
