@@ -236,6 +236,35 @@ function animateNumber(element, target, formatter = value => value.toLocaleStrin
     requestAnimationFrame(frame);
 }
 
+function animateStatisticsWhenVisible(total, children, data) {
+    const section = total.closest(".statistics");
+    const totalFormatter = value =>
+        new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(value);
+
+    total.textContent = totalFormatter(0);
+    if (Number.isFinite(data.childrenPercentage)) children.textContent = "0";
+
+    const startAnimation = () => {
+        animateNumber(total, data.totalForciblyDisplaced, totalFormatter);
+        if (Number.isFinite(data.childrenPercentage)) {
+            animateNumber(children, data.childrenPercentage);
+        }
+    };
+
+    if (!section || !("IntersectionObserver" in window)) {
+        startAnimation();
+        return;
+    }
+
+    const statisticsObserver = new IntersectionObserver((entries, observer) => {
+        if (!entries.some(entry => entry.isIntersecting)) return;
+        observer.disconnect();
+        startAnimation();
+    }, { threshold: 0.25 });
+
+    statisticsObserver.observe(section);
+}
+
 async function loadNews() {
     const list = document.getElementById("news-list");
     const status = document.getElementById("news-status");
@@ -248,7 +277,7 @@ async function loadNews() {
         const articles = Array.isArray(data.articles) ? data.articles : [];
         if (!articles.length) throw new Error("No stories are available yet");
 
-        list.replaceChildren(...articles.slice(0, 5).map(article => {
+        list.replaceChildren(...articles.slice(0, 4).map(article => {
             const card = document.createElement("article");
             card.className = "resource-card news-card";
 
@@ -304,16 +333,13 @@ async function loadStatistics() {
         const data = await response.json();
         if (!Number.isFinite(data.totalForciblyDisplaced)) throw new Error("Statistics have not loaded yet");
 
-        animateNumber(total, data.totalForciblyDisplaced, value =>
-            new Intl.NumberFormat(undefined, { notation: "compact", maximumFractionDigits: 1 }).format(value));
-
-        if (Number.isFinite(data.childrenPercentage)) {
-            animateNumber(children, data.childrenPercentage);
-        } else {
+        if (!Number.isFinite(data.childrenPercentage)) {
             children.textContent = "—";
             const suffix = document.getElementById("children-suffix");
             if (suffix) suffix.textContent = "";
         }
+
+        animateStatisticsWhenVisible(total, children, data);
 
         if (status) {
             status.textContent = `UNHCR reporting year ${data.reportingYear}. Data checked ${formatDate(data.checkedAt)}.`;
