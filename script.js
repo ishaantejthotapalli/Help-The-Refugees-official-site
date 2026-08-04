@@ -99,13 +99,25 @@ document.querySelectorAll(".dropdown > a").forEach(dropdown => {
    Active Navigation Link
 =========================== */
 
-const currentPage = window.location.pathname.split("/").pop();
+const normalizePagePath = path => {
+    const decodedPath = decodeURIComponent(path).replace(/\/+$/, "");
+
+    return decodedPath.endsWith("/index.html")
+        ? decodedPath.slice(0, -"/index.html".length) || "/"
+        : decodedPath || "/";
+};
+
+const currentPagePath = normalizePagePath(window.location.pathname);
 
 document.querySelectorAll(".nav-links a").forEach(link => {
 
     const href = link.getAttribute("href");
 
-    if(href && href.endsWith(currentPage)){
+    if(!href || href === "#") return;
+
+    const linkPagePath = normalizePagePath(new URL(href, window.location.href).pathname);
+
+    if(linkPagePath === currentPagePath){
 
         document
             .querySelectorAll(".nav-links a")
