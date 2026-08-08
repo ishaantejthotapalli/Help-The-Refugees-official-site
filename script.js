@@ -4,6 +4,20 @@
 ========================================== */
 
 /* ===========================
+   Jotform AI Agent
+=========================== */
+
+if (!document.querySelector('script[data-jotform-agent="help-the-refugees"]')) {
+    const jotformAgentScript = document.createElement("script");
+
+    jotformAgentScript.src = "https://cdn.jotfor.ms/agent/embedjs/019fdd1d80707000847d2fdf445d1c7270db/embed.js";
+    jotformAgentScript.async = true;
+    jotformAgentScript.dataset.jotformAgent = "help-the-refugees";
+
+    document.body.appendChild(jotformAgentScript);
+}
+
+/* ===========================
    Scroll Progress Bar
 =========================== */
 
