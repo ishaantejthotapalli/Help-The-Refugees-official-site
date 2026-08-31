@@ -1,0 +1,69 @@
+name: Extra Concepts Research
+
+on:
+  schedule:
+    - cron: "30 4 * * 0" # Sunday 10:00 IST: generate four ideas
+    - cron: "30 12 * * 1-5" # Weekdays 18:00 IST: deepen selected research
+    - cron: "30 14 * * 5" # Friday 20:00 IST: publish the finished concept
+  workflow_dispatch:
+    inputs:
+      action:
+        description: "Action to run"
+        required: true
+        type: choice
+        options: [email-test, ideas, select, research, publish]
+      idea_choice:
+        description: "For select: idea number (1-4)"
+        required: false
+        type: string
+
+permissions:
+  contents: write
+
+concurrency:
+  group: extra-concepts-research
+  cancel-in-progress: false
+
+jobs:
+  run:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Decide action
+        id: decide
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+            echo "action=${{ inputs.action }}" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "30 4 * * 0" ]; then
+            echo "action=ideas" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event.schedule }}" = "30 14 * * 5" ]; then
+            echo "action=publish" >> "$GITHUB_OUTPUT"
+          else
+            echo "action=research" >> "$GITHUB_OUTPUT"
+          fi
+      - name: Run Extra Concepts backend
+        run: node scripts/extra-concepts.mjs "${{ steps.decide.outputs.action }}" "${{ inputs.idea_choice }}"
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+          OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          EXTRA_CONCEPTS_FROM: ${{ secrets.EXTRA_CONCEPTS_FROM }}
+          EXTRA_CONCEPTS_RECIPIENT: ${{ secrets.EXTRA_CONCEPTS_RECIPIENT }}
+      - name: Commit generated research or pages
+        if: steps.decide.outputs.action != 'email-test'
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/extra-concepts.json more-info/extra-concepts.html sitemap.xml
+          if [ -d more-info/extra-concepts ]; then git add more-info/extra-concepts; fi
+          git diff --cached --quiet && exit 0
+          git commit -m "Update Extra Concepts research"
+          git pull --rebase origin "${{ github.ref_name }}"
+          git push origin "HEAD:${{ github.ref_name }}"
