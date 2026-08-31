@@ -1,6 +1,11 @@
 name: Extra Concepts Research
 
 on:
+  push:
+    branches:
+      - codex/extra-concepts-automation
+    paths:
+      - .github/workflows/extra-concepts.yml
   schedule:
     - cron: "30 4 * * 0" # Sunday 10:00 IST: generate four ideas
     - cron: "30 12 * * 1-5" # Weekdays 18:00 IST: deepen selected research
@@ -38,7 +43,9 @@ jobs:
         id: decide
         shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          if [ "${{ github.event_name }}" = "push" ]; then
+            echo "action=email-test" >> "$GITHUB_OUTPUT"
+          elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "action=${{ inputs.action }}" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event.schedule }}" = "30 4 * * 0" ]; then
             echo "action=ideas" >> "$GITHUB_OUTPUT"
