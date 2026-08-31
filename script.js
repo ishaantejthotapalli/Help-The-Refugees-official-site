@@ -123,25 +123,28 @@ const normalizePagePath = path => {
 
 const currentPagePath = normalizePagePath(window.location.pathname);
 
-document.querySelectorAll(".nav-links a").forEach(link => {
+const navigationLinks = [...document.querySelectorAll(".nav-links a")];
 
-    const href = link.getAttribute("href");
-
-    if(!href || href === "#") return;
-
-    const linkPagePath = normalizePagePath(new URL(href, window.location.href).pathname);
-
-    if(linkPagePath === currentPagePath){
-
-        document
-            .querySelectorAll(".nav-links a")
-            .forEach(item => item.classList.remove("active"));
-
-        link.classList.add("active");
-
-    }
-
+navigationLinks.forEach(link => {
+    link.classList.remove("active");
+    link.removeAttribute("aria-current");
 });
+
+const currentNavigationLink = navigationLinks.find(link => {
+    const href = link.getAttribute("href");
+    if(!href || href === "#") return false;
+
+    return normalizePagePath(new URL(href, window.location.href).pathname) === currentPagePath;
+});
+
+if(currentNavigationLink){
+    currentNavigationLink.classList.add("active");
+    currentNavigationLink.setAttribute("aria-current", "page");
+
+    const parentDropdown = currentNavigationLink.closest(".dropdown");
+    const dropdownToggle = parentDropdown?.querySelector(":scope > a");
+    dropdownToggle?.classList.add("active");
+}
 
 /* ===========================
    Back To Top Button
