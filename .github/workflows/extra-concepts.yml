@@ -10,13 +10,15 @@ on:
     - cron: "30 4 * * 0" # Sunday 10:00 IST: generate four ideas
     - cron: "30 12 * * 1-5" # Weekdays 18:00 IST: deepen selected research
     - cron: "30 14 * * 5" # Friday 20:00 IST: publish the finished concept
+  issue_comment:
+    types: [created]
   workflow_dispatch:
     inputs:
       action:
         description: "Action to run"
         required: true
         type: choice
-        options: [email-test, ideas, select, research, publish]
+        options: [ideas, select, research, publish]
       idea_choice:
         description: "For select: idea number (1-4)"
         required: false
@@ -24,13 +26,29 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: extra-concepts-research
   cancel-in-progress: false
 
 jobs:
+  branch-test:
+    if: github.event_name == 'push'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Create test issue and wait for selection
+        run: node scripts/extra-concepts-issue-test.mjs
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   run:
+    if: github.event_name != 'push' && (github.event_name != 'issue_comment' || (startsWith(github.event.issue.title, '[Extra Concepts]') && contains(github.event.comment.body, '/choose')))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -43,8 +61,8 @@ jobs:
         id: decide
         shell: bash
         run: |
-          if [ "${{ github.event_name }}" = "push" ]; then
-            echo "action=email-test" >> "$GITHUB_OUTPUT"
+          if [ "${{ github.event_name }}" = "issue_comment" ]; then
+            echo "action=select" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
             echo "action=${{ inputs.action }}" >> "$GITHUB_OUTPUT"
           elif [ "${{ github.event.schedule }}" = "30 4 * * 0" ]; then
@@ -59,9 +77,8 @@ jobs:
         env:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           OPENAI_MODEL: ${{ vars.OPENAI_MODEL }}
-          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
-          EXTRA_CONCEPTS_FROM: ${{ secrets.EXTRA_CONCEPTS_FROM }}
-          EXTRA_CONCEPTS_RECIPIENT: ${{ secrets.EXTRA_CONCEPTS_RECIPIENT }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          COMMENT_BODY: ${{ github.event.comment.body }}
       - name: Commit generated research or pages
         if: steps.decide.outputs.action != 'email-test'
         shell: bash

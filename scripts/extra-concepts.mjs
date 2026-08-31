@@ -7,9 +7,11 @@ const statePath = path.join(root, "data", "extra-concepts.json");
 const landingPath = path.join(root, "more-info", "extra-concepts.html");
 const articlesDir = path.join(root, "more-info", "extra-concepts");
 const siteUrl = "https://ishaantejthotapalli.github.io/Help-The-Refugees-official-site";
-const recipient = process.env.EXTRA_CONCEPTS_RECIPIENT || "ishaantejthotapalli@gmail.com";
 const action = process.argv[2];
-const choice = Number(process.argv[3] || process.env.IDEA_CHOICE);
+const choice = Number(process.argv[3] || process.env.IDEA_CHOICE || process.env.COMMENT_BODY?.match(/^\/choose\s+([1-4])\b/i)?.[1]);
+const repository = process.env.GITHUB_REPOSITORY;
+const githubToken = process.env.GITHUB_TOKEN;
+const githubApi = process.env.GITHUB_API_URL || "https://api.github.com";
 
 function readState() {
   return JSON.parse(fs.readFileSync(statePath, "utf8"));
@@ -44,20 +46,19 @@ async function askResearchModel(prompt) {
   return extractResponseText(await response.json());
 }
 
-async function sendEmail(subject, html) {
-  if (!process.env.RESEND_API_KEY) throw new Error("RESEND_API_KEY is required");
-  const response = await fetch("https://api.resend.com/emails", {
-    method: "POST",
-    headers: { Authorization: `Bearer ${process.env.RESEND_API_KEY}`, "Content-Type": "application/json" },
-    body: JSON.stringify({
-      from: process.env.EXTRA_CONCEPTS_FROM || "Help The Refugees <onboarding@resend.dev>",
-      to: [recipient],
-      subject,
-      html
-    })
+async function githubRequest(endpoint, options = {}) {
+  if (!githubToken || !repository) throw new Error("GITHUB_TOKEN and GITHUB_REPOSITORY are required");
+  const response = await fetch(`${githubApi}/repos/${repository}${endpoint}`, {
+    ...options,
+    headers: { Accept: "application/vnd.github+json", Authorization: `Bearer ${githubToken}`, "X-GitHub-Api-Version": "2022-11-28", "Content-Type": "application/json", ...options.headers }
   });
-  if (!response.ok) throw new Error(`Email API failed (${response.status}): ${await response.text()}`);
-  console.log(`Email sent to ${recipient}: ${subject}`);
+  if (!response.ok) throw new Error(`GitHub API failed (${response.status}): ${await response.text()}`);
+  return response.status === 204 ? null : response.json();
+}
+
+async function commentOnIssue(issueNumber, body) {
+  if (!issueNumber) return;
+  await githubRequest(`/issues/${issueNumber}/comments`, { method: "POST", body: JSON.stringify({ body }) });
 }
 
 function siteTopics() {
@@ -98,8 +99,11 @@ async function generateIdeas() {
   state.selected = null;
   state.researchNotes = [];
   writeState(state);
-  const rows = state.ideas.map((idea, index) => `<h3>${index + 1}. ${escapeHtml(idea.title)}</h3><p>${escapeHtml(idea.angle)}</p><p><strong>Why it matters:</strong> ${escapeHtml(idea.whyItMatters)}</p>`).join("");
-  await sendEmail("Choose this week's Extra Concept", `<h2>Four new Extra Concepts</h2>${rows}<p>Open the repository’s <strong>Extra Concepts Research</strong> workflow, choose <strong>Run workflow</strong>, select <strong>select</strong>, and enter idea number 1–4.</p>`);
+  const rows = state.ideas.map((idea, index) => `### ${index + 1}. ${idea.title}\n${idea.angle}\n\n**Why it matters:** ${idea.whyItMatters}`).join("\n\n");
+  const issue = await githubRequest("/issues", { method: "POST", body: JSON.stringify({ title: `[Extra Concepts] Choose a topic — ${new Date().toISOString().slice(0, 10)}`, body: `${rows}\n\n## Choose\nComment \`/choose 1\`, \`/choose 2\`, \`/choose 3\`, or \`/choose 4\`.` }) });
+  state.issueNumber = issue.number;
+  writeState(state);
+  console.log(`Choice issue created: ${issue.html_url}`);
 }
 
 async function selectIdea() {
@@ -109,7 +113,7 @@ async function selectIdea() {
   state.researchNotes = [];
   writeState(state);
   await research();
-  await sendEmail(`Research started: ${state.selected.title}`, `<p>Your selection was recorded and its first research pass is complete.</p><p><strong>${escapeHtml(state.selected.title)}</strong></p><p>The system will deepen the research each day and prepare the page on Friday.</p>`);
+  await commentOnIssue(state.issueNumber, `Selection recorded: **${state.selected.title}**. The first research pass is complete. Research will continue through Friday.`);
 }
 
 async function research() {
@@ -143,7 +147,7 @@ async function publish() {
   writeState(state);
   updateLanding(state);
   addArticleToSitemap(slug);
-  await sendEmail(`Published: ${article.title}`, `<p>The new Extra Concept is ready:</p><p><a href="${siteUrl}/more-info/extra-concepts/${slug}.html">${escapeHtml(article.title)}</a></p>`);
+  await commentOnIssue(state.issueNumber, `Published: [${article.title}](${siteUrl}/more-info/extra-concepts/${slug}.html)`);
 }
 
 function updateLanding(state) {
@@ -162,10 +166,6 @@ function addArticleToSitemap(slug) {
   fs.writeFileSync(sitemapPath, sitemap.replace("</urlset>", `${entry}</urlset>`));
 }
 
-async function emailTest() {
-  await sendEmail("Help The Refugees automation test", "<h2>Email connection successful</h2><p>The Extra Concepts research system can send its Sunday ideas to this address.</p>");
-}
-
-const commands = { ideas: generateIdeas, select: selectIdea, research, publish, "email-test": emailTest };
-if (!commands[action]) throw new Error("Use: ideas, select, research, publish, or email-test");
+const commands = { ideas: generateIdeas, select: selectIdea, research, publish };
+if (!commands[action]) throw new Error("Use: ideas, select, research, or publish");
 await commands[action]();
