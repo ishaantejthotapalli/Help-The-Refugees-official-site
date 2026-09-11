@@ -394,7 +394,7 @@ section h2{
     box-shadow:0 20px 40px rgba(0,0,0,.15);
 }
 
-.stat-card h1{
+.stat-card .stat-number{
     font-size:4rem;
     color:#ff4d4d;
     margin-bottom:10px;
@@ -693,7 +693,7 @@ footer hr{
         font-size:1.8rem;
     }
 
-    .stat-card h1{
+    .stat-card .stat-number{
         font-size:3rem;
     }
 
@@ -808,7 +808,7 @@ section h2{
     transform:rotate(12deg);
 }
 
-.stat-card h1{
+.stat-card .stat-number{
     color:#d63e57;
 }
 

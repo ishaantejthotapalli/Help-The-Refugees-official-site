@@ -2,6 +2,10 @@
 
 An educational, child-friendly static website that helps young visitors learn about forced displacement through stories, statistics, maps and interactive games.
 
+## Live website
+
+[Visit Help The Refugees](https://ishaantejthotapalli.github.io/Help-The-Refugees-official-site/)
+
 ## Live data
 
 ### Refugee news
