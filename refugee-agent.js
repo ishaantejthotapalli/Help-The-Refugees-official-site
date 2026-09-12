@@ -107,7 +107,11 @@
         let bestScore = 0;
 
         answers.forEach(answer => {
-            const score = answer.terms.reduce((total, term) => total + (normalised.includes(term) ? term.split(" ").length : 0), 0);
+            const score = answer.terms.reduce((total, term) => {
+                if (!normalised.includes(term)) return total;
+                const wordCount = term.split(" ").length;
+                return total + (wordCount * wordCount);
+            }, 0);
             if (score > bestScore) {
                 best = answer;
                 bestScore = score;

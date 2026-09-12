@@ -24,6 +24,30 @@ window.RefugeeAgentKnowledge = Object.freeze({
     ],
     answers: [
         {
+            id: "hardships-phase-three",
+            terms: ["phase 3", "phase three", "hardships phase 3", "after arrival"],
+            text: "Phase 3 is about what can happen after a refugee reaches a safer country. Immediate danger may be behind them, but rebuilding life can still involve learning a new language, finding housing, entering school or work, coping with homesickness, and facing discrimination or bullying. Safety is a vital first step; feeling accepted, stable and at home can take much longer.",
+            simple: "Phase 3 means starting again after reaching safety. A person may still need a home, school, work, friends, language support and time to feel they belong.",
+            link: "/more-info/hardships/",
+            linkText: "Read Phase 3: After Arrival"
+        },
+        {
+            id: "hardships-phase-two",
+            terms: ["phase 2", "phase two", "hardships phase 2", "during the journey"],
+            text: "Phase 2 covers the journey to safety. Travel may be long and exhausting, with limited food or clean water and no certainty about where a family will sleep or when they will be safe. Each journey is different, and the page describes common risks without claiming that every refugee experiences the same events.",
+            simple: "Phase 2 is the journey to safety. People may travel for a long time while facing hunger, thirst, fear and uncertainty.",
+            link: "/more-info/hardships/",
+            linkText: "Read Phase 2: During the Journey"
+        },
+        {
+            id: "hardships-phase-one",
+            terms: ["phase 1", "phase one", "hardships phase 1", "at home"],
+            text: "Phase 1 explains why home may become unsafe. War can destroy homes and essential services, persecution can target people because of identity or beliefs, and human-rights violations can remove safety and freedom. Climate disasters can also cause displacement, although disaster displacement alone does not automatically make someone a refugee under international law.",
+            simple: "Phase 1 is what happens before leaving: home becomes unsafe because of dangers such as war, persecution or serious rights violations.",
+            link: "/more-info/hardships/",
+            linkText: "Read Phase 1: At Home"
+        },
+        {
             id: "refugee-definition",
             terms: ["refugee", "meaning", "definition", "who is", "what is"],
             text: "A refugee is a person who has left their country because serious danger—such as persecution, conflict or violence—means they cannot safely return. Refugee status is about needing protection; it does not define a person's personality, abilities or future.",
