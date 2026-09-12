@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.resolve(__dirname, "..");
-const siteOrigin = "https://ishaantejthotapalli.github.io/Help-The-Refugees-official-site";
+const siteOrigin = "https://helptherefugees.github.io";
 const ignored = new Set(["404.html", "google6d27a65a364f9328.html"]);
 
 function walk(directory) {
@@ -27,12 +27,14 @@ for (const file of htmlFiles) {
   const titleCount = (head.match(/<title>/gi) || []).length;
   const descriptions = [...head.matchAll(/<meta\s+name=["']description["']\s+content=["']([^"']+)["']/gi)];
   const canonicals = [...head.matchAll(/<link\s+rel=["']canonical["']\s+href=["']([^"']+)["']/gi)];
+  const h1Count = (body.match(/<h1\b/gi) || []).length;
 
   if (titleCount !== 1) errors.push(`${relative}: expected one title in head, found ${titleCount}`);
   if (descriptions.length !== 1) errors.push(`${relative}: expected one meta description`);
   if (canonicals.length !== 1) errors.push(`${relative}: expected one canonical URL`);
   if (canonicals[0] && !canonicals[0][1].startsWith(siteOrigin)) errors.push(`${relative}: canonical uses the wrong origin`);
   if (canonicals[0] && !sitemap.includes(`<loc>${canonicals[0][1]}</loc>`)) errors.push(`${relative}: canonical is missing from sitemap`);
+  if (h1Count !== 1) errors.push(`${relative}: expected one primary h1, found ${h1Count}`);
   if (/<(?:html|head|title|meta\s+charset)\b/i.test(body)) errors.push(`${relative}: document metadata appears inside body`);
 
   for (const match of head.matchAll(/<script\s+type=["']application\/ld\+json["']>([\s\S]*?)<\/script>/gi)) {
@@ -47,8 +49,10 @@ for (const file of htmlFiles) {
   for (const match of html.matchAll(/href=["']([^"'#?]+)["']/gi)) {
     const href = match[1];
     if (/^(?:https?:|mailto:|tel:|javascript:)/i.test(href)) continue;
-    const target = path.resolve(path.dirname(file), href);
-    const candidates = href.endsWith("/") ? [path.join(target, "index.html")] : [target, `${target}.html`, path.join(target, "index.html")];
+    const target = href.startsWith("/") ? path.resolve(root, `.${href}`) : path.resolve(path.dirname(file), href);
+    const candidates = href.endsWith("/")
+      ? [path.join(target, "index.html"), `${target}.html`]
+      : [target, `${target}.html`, path.join(target, "index.html")];
     if (!candidates.some(candidate => fs.existsSync(candidate))) errors.push(`${relative}: broken internal link ${href}`);
   }
 }
