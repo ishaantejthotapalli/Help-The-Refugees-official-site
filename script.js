@@ -3,6 +3,15 @@
    Main JavaScript
 ========================================== */
 
+/* Load the site-owned learning assistant on every page. */
+if (!document.querySelector('script[data-refugee-agent]')) {
+    const refugeeAgentScript = document.createElement("script");
+    refugeeAgentScript.src = "/refugee-agent.js";
+    refugeeAgentScript.defer = true;
+    refugeeAgentScript.dataset.refugeeAgent = "true";
+    document.head.appendChild(refugeeAgentScript);
+}
+
 /* ===========================
    Scroll Progress Bar
 =========================== */
