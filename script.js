@@ -5,6 +5,10 @@
 
 /* Load the site-owned learning assistant on every page. */
 if (!document.querySelector('script[data-refugee-agent]')) {
+    const siteIndexScript = document.createElement("script");
+    siteIndexScript.src = "/refugee-agent-site-index.js";
+    siteIndexScript.defer = true;
+
     const knowledgeScript = document.createElement("script");
     knowledgeScript.src = "/refugee-agent-knowledge.js";
     knowledgeScript.defer = true;
@@ -14,8 +18,9 @@ if (!document.querySelector('script[data-refugee-agent]')) {
     refugeeAgentScript.defer = true;
     refugeeAgentScript.dataset.refugeeAgent = "true";
 
+    siteIndexScript.addEventListener("load", () => document.head.appendChild(knowledgeScript));
     knowledgeScript.addEventListener("load", () => document.head.appendChild(refugeeAgentScript));
-    document.head.appendChild(knowledgeScript);
+    document.head.appendChild(siteIndexScript);
 }
 
 /* ===========================

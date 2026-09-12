@@ -55,7 +55,46 @@
     const knowledge = window.RefugeeAgentKnowledge || fallbackKnowledge;
     const answers = knowledge.answers;
     const quickQuestions = knowledge.quickQuestions;
+    const siteIndex = window.RefugeeAgentSiteIndex || [];
     let lastAnswer = null;
+
+    const stopWords = new Set(["a", "an", "and", "are", "can", "do", "does", "for", "from", "how", "i", "in", "is", "it", "me", "of", "on", "or", "the", "this", "to", "what", "when", "where", "who", "why", "with", "you"]);
+
+    function chooseSiteAnswer(normalised) {
+        const queryTerms = normalised.split(" ").filter(word => word.length > 2 && !stopWords.has(word));
+        let best = null;
+        let bestScore = -1;
+
+        siteIndex.forEach(page => {
+            page.chunks.forEach(chunk => {
+                const searchable = `${page.title} ${chunk}`.toLowerCase();
+                const score = queryTerms.reduce((total, term) => {
+                    const matches = searchable.split(term).length - 1;
+                    return total + Math.min(matches, 3);
+                }, 0) + (normalised.includes(page.title.toLowerCase()) ? 4 : 0);
+
+                if (score > bestScore) {
+                    bestScore = score;
+                    best = { page, chunk };
+                }
+            });
+        });
+
+        if (!best) {
+            return {
+                text: "I can guide you through everything published on Help The Refugees: definitions, hardships, displacement crises, games, videos, events, sources and respectful ways to act. Ask about any part of the website and I’ll explain it.",
+                link: "/learn/",
+                linkText: "Explore all learning topics"
+            };
+        }
+
+        return {
+            text: best.chunk,
+            simple: best.chunk,
+            link: best.page.url,
+            linkText: `Read more on ${best.page.title}`
+        };
+    }
 
     function chooseAnswer(question) {
         const normalised = question.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
@@ -75,12 +114,8 @@
             }
         });
 
-        const result = best || {
-            text: "I don’t have a verified explanation for that yet. I can help with refugee definitions, reasons people flee, hardships, education, mental health, the crisis map, games, events, videos, student action or feedback about this website. Try rephrasing your question using one of those topics.",
-            link: "/learn/",
-            linkText: "Open the learning guide"
-        };
-        if (best) lastAnswer = best;
+        const result = best || chooseSiteAnswer(normalised);
+        lastAnswer = result;
         return result;
     }
 
