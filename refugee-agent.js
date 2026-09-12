@@ -1,7 +1,9 @@
 (() => {
     "use strict";
 
-    const answers = [
+    const fallbackKnowledge = {
+        quickQuestions: ["What is a refugee?", "How can students help?"],
+        answers: [
         {
             terms: ["refugee", "meaning", "definition", "who"],
             text: "A refugee is someone who has left their country because returning would put them at serious risk from persecution, conflict or violence. Refugees are people with rights, skills, families and hopes—not just a label.",
@@ -48,33 +50,38 @@
             terms: ["source", "fact", "reliable", "trust", "accurate"],
             text: "The website prioritises information from organisations such as UNHCR, UNICEF, WHO, UNESCO, IOM and IDMC. Always check a statistic's source, reporting period and publication date before sharing it."
         }
-    ];
-
-    const quickQuestions = [
-        "What is a refugee?",
-        "How can students help?",
-        "Refugee vs asylum seeker",
-        "Explore the crisis map"
-    ];
+        ]
+    };
+    const knowledge = window.RefugeeAgentKnowledge || fallbackKnowledge;
+    const answers = knowledge.answers;
+    const quickQuestions = knowledge.quickQuestions;
+    let lastAnswer = null;
 
     function chooseAnswer(question) {
-        const words = question.toLowerCase().match(/[a-z]+/g) || [];
+        const normalised = question.toLowerCase().replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+
+        if (/^(?:explain|say|make).*(?:simple|simpler)|(?:i do not|i don't|dont) understand|confus/.test(normalised) && lastAnswer) {
+            return { ...lastAnswer, text: lastAnswer.simple || lastAnswer.text, linkText: lastAnswer.linkText || "Learn more" };
+        }
+
         let best = null;
         let bestScore = 0;
 
         answers.forEach(answer => {
-            const score = answer.terms.reduce((total, term) => total + (words.includes(term) ? 1 : 0), 0);
+            const score = answer.terms.reduce((total, term) => total + (normalised.includes(term) ? term.split(" ").length : 0), 0);
             if (score > bestScore) {
                 best = answer;
                 bestScore = score;
             }
         });
 
-        return best || {
-            text: "I’m still learning that topic. Try asking what a refugee is, how students can help, what hardships people may face, or how refugees and asylum seekers differ. You can also explore the learning guide.",
+        const result = best || {
+            text: "I don’t have a verified explanation for that yet. I can help with refugee definitions, reasons people flee, hardships, education, mental health, the crisis map, games, events, videos, student action or feedback about this website. Try rephrasing your question using one of those topics.",
             link: "/learn/",
             linkText: "Open the learning guide"
         };
+        if (best) lastAnswer = best;
+        return result;
     }
 
     function createAgent() {
