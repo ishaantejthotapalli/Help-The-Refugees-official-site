@@ -2,7 +2,7 @@ const fs = require("fs");
 const path = require("path");
 
 const root = path.resolve(__dirname, "..");
-const siteOrigin = "https://ishaantejthotapalli.github.io/Help-The-Refugees-official-site";
+const siteOrigin = "https://helptherefugees.github.io";
 const ignored = new Set(["404.html", "google6d27a65a364f9328.html"]);
 
 function walk(directory) {
@@ -49,8 +49,10 @@ for (const file of htmlFiles) {
   for (const match of html.matchAll(/href=["']([^"'#?]+)["']/gi)) {
     const href = match[1];
     if (/^(?:https?:|mailto:|tel:|javascript:)/i.test(href)) continue;
-    const target = path.resolve(path.dirname(file), href);
-    const candidates = href.endsWith("/") ? [path.join(target, "index.html")] : [target, `${target}.html`, path.join(target, "index.html")];
+    const target = href.startsWith("/") ? path.resolve(root, `.${href}`) : path.resolve(path.dirname(file), href);
+    const candidates = href.endsWith("/")
+      ? [path.join(target, "index.html"), `${target}.html`]
+      : [target, `${target}.html`, path.join(target, "index.html")];
     if (!candidates.some(candidate => fs.existsSync(candidate))) errors.push(`${relative}: broken internal link ${href}`);
   }
 }

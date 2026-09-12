@@ -4,7 +4,7 @@ An educational, child-friendly static website that helps young visitors learn ab
 
 ## Live website
 
-[Visit Help The Refugees](https://ishaantejthotapalli.github.io/Help-The-Refugees-official-site/)
+[Visit Help The Refugees](https://helptherefugees.github.io/)
 
 ## Live data
 
@@ -34,7 +34,7 @@ Then visit `http://localhost:8000/`.
 
 ## Search and answer-engine visibility
 
-- The canonical site origin is `https://ishaantejthotapalli.github.io/Help-The-Refugees-official-site/`.
+- The canonical site origin is `https://helptherefugees.github.io/`.
 - `robots.txt` permits Googlebot, Bingbot, OAI-SearchBot, ChatGPT-User and other public crawlers.
 - `sitemap.xml` contains every canonical indexable page and should be submitted in Google Search Console and Bing Webmaster Tools after deployment.
 - Important pages include self-referencing canonical URLs, unique descriptions and machine-readable JSON-LD where relevant.
